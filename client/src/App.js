@@ -4,7 +4,33 @@ import TimeLiquidationCheck from "./contracts/TimeLiquidationCheck.json";
 import getWeb3 from "./getWeb3";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
+import Button from "@material-ui/core/Button";
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableHead from "@material-ui/core/TableHead";
+import TableRow from "@material-ui/core/TableRow";
+import Paper from "@material-ui/core/Paper";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
+import { createMuiTheme } from "@material-ui/core/styles";
+import { ThemeProvider } from "@material-ui/styles";
+
 import "./App.css";
+
+const theme = createMuiTheme({
+  typography: {
+    fontFamily: [
+      "Nunito",
+      "Roboto",
+      '"Helvetica Neue"',
+      "Arial",
+      "sans-serif",
+    ].join(","),
+  },
+});
 
 const App = () => {
   const [web3, setWeb3] = useState(null);
@@ -13,69 +39,69 @@ const App = () => {
   const [values, setValues] = useState(null);
   const [lcAddresses, setLCAddresses] = useState([]);
 
-  useEffect(() => {
-    (async () => {
-      // Get network provider and web3 instance.
-      const web3 = await getWeb3();
+  const connectWeb3 = async () => {
+    console.log("connected");
+    // Get network provider and web3 instance.
+    const web3 = await getWeb3();
 
-      // Use web3 to get the user's accounts.
-      const accounts = await web3.eth.getAccounts();
+    // Use web3 to get the user's accounts.
+    const accounts = await web3.eth.getAccounts();
+    console.log(accounts);
+    // Get the contract instance.
+    const networkId = await web3.eth.net.getId();
+    const instance = new web3.eth.Contract(
+      CollaterizeContract.abi,
+      CollaterizeContract.networks[networkId] &&
+        CollaterizeContract.networks[networkId].address,
+      { gasLimit: 1000000, from: accounts[0] }
+    );
 
-      // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-      const instance = new web3.eth.Contract(
-        CollaterizeContract.abi,
-        CollaterizeContract.networks[networkId] &&
-          CollaterizeContract.networks[networkId].address,
-        { gasLimit: 1000000, from: accounts[0] }
-      );
+    const erc20Instances = {};
+    const liquidationCheckAddresses = {};
+    liquidationCheckAddresses["Time"] =
+      TimeLiquidationCheck.networks[networkId].address;
 
-      const erc20Instances = {};
-      const liquidationCheckAddresses = {};
-      liquidationCheckAddresses["Time"] =
-        TimeLiquidationCheck.networks[networkId].address;
+    const values = {};
+    values["ETH"] = {
+      balance: await web3.eth.getBalance(accounts[0]),
+      sum: 0,
+      collaterals: [],
+    };
+    const allCollaterals = await instance.methods
+      .getCreatedCollaterals(accounts[0])
+      .call();
 
-      const values = {};
-      values["ETH"] = {
-        balance: await web3.eth.getBalance(accounts[0]),
-        sum: 0,
-        collaterals: [],
-      };
-      const allCollaterals = await instance.methods
-        .getCreatedCollaterals(accounts[0])
+    for (let i = 0; i < allCollaterals.length; i++) {
+      let collateral = await instance.methods
+        .collaterals(allCollaterals[i])
         .call();
-
-      for (let i = 0; i < allCollaterals.length; i++) {
-        let collateral = await instance.methods
-          .collaterals(allCollaterals[i])
-          .call();
-        if (parseInt(collateral.token) == 0) {
-          values["ETH"].collaterals.push({
-            owner: await instance.methods
-              .collateralOwners(allCollaterals[i])
-              .call(),
-            amount: collateral.amount,
-          });
-          values["ETH"].sum += collateral.amount;
-        }
+      if (parseInt(collateral.token) == 0) {
+        values["ETH"].collaterals.push({
+          owner: await instance.methods
+            .collateralOwners(allCollaterals[i])
+            .call(),
+          amount: collateral.amount,
+        });
+        values["ETH"].sum += collateral.amount;
       }
+    }
 
-      console.log(values);
-
-      setWeb3(web3);
-      setAccounts(accounts);
-      setContract(instance);
-      setValues(values);
-      setLCAddresses(liquidationCheckAddresses);
-
-      return () => {};
-    })();
-  });
+    setWeb3(web3);
+    setAccounts(accounts);
+    setContract(instance);
+    setValues(values);
+    setLCAddresses(liquidationCheckAddresses);
+    return () => {};
+  };
 
   return (
     <Router>
       <Switch>
-        <Route exact path="/" render={() => <Home values={values} />} />
+        <Route
+          exact
+          path="/"
+          render={() => <Home values={values} connectWeb3={connectWeb3} />}
+        />
 
         <Route
           path="/create"
@@ -92,27 +118,60 @@ const App = () => {
     </Router>
   );
 };
-const Home = ({ values }) => {
+const Home = ({ values, connectWeb3 }) => {
   return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Asset</th>
-            <th>Sum</th>
-            <th>Visuals</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>ETH</td>
-            <td>{values ? values["ETH"].sum : ""}</td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
-      <Link to="/create">Add Collateral</Link>
-    </div>
+    <ThemeProvider theme={theme}>
+      <div>
+        <AppBar position="static" className="appbar">
+          <Toolbar variant="dense">
+            <Typography variant="h5">Collaterize</Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              className="connect-wallet"
+              onClick={connectWeb3}
+            >
+              Connect to Wallet
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <div class="center body-vertical-span">
+          <div>
+            <div class="center">
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center">Asset</TableCell>
+                      <TableCell align="center">Sum</TableCell>
+                      <TableCell align="center">Visuals</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>ETH</TableCell>
+                      <TableCell>{values ? values["ETH"].sum : ""}</TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </div>
+
+            <br />
+            <div class="center">
+              <Link to="/create">
+                <Button variant="contained" color="primary">
+                  Add Collateral
+                </Button>
+              </Link>
+            </div>
+
+            <br />
+          </div>
+        </div>
+      </div>
+    </ThemeProvider>
   );
 };
 

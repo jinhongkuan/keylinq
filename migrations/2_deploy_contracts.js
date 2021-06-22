@@ -21,11 +21,11 @@ module.exports = async function (deployer, network, accounts) {
     { gasLimit: 1000000 }
   );
 
-  await collaterizeContract.methods
-    .createCollateralETH(
-      accounts[1],
-      tlcContract.options.address,
-      web3.utils.numberToHex(Math.ceil(Date.now() / 1000) + 60)
-    )
-    .send({ from: accounts[0], value: web3.utils.toWei("1", "ether") });
+  // await collaterizeContract.methods
+  //   .createCollateralETH(
+  //     accounts[1],
+  //     tlcContract.options.address,
+  //     web3.utils.numberToHex(Math.ceil(Date.now() / 1000) + 60)
+  //   )
+  //   .send({ from: accounts[0], value: web3.utils.toWei("1", "ether") });
 };
