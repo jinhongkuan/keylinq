@@ -6,49 +6,17 @@ contract TimeLiquidationCheck is ILiquidationCheck {
 
     constructor() ILiquidationCheck() {}
 
-    function liquidationCheck(address creator, address owner, bytes memory args) 
+    function liquidationCheck(address[] memory accounts, uint256 index, bytes memory args) 
     external 
     view 
     override 
     returns(bool) {
         uint256 timeStamp;
-        assembly {
-            timeStamp := mload(add(args, 32))
+        for(uint i=0;i<args.length;i++){
+            timeStamp = timeStamp + uint(uint8(args[i]))*(2**(8*(args.length-(i+1))));
         }
-        return (block.timestamp >= timeStamp);
-    }
-
-    function toString(address creator, address owner, bytes memory args) 
-    external 
-    pure
-    override
-    returns(string memory) {
-        uint256 timeStamp;
-        assembly {
-            timeStamp := mload(add(args, 32))
-        }
-        return string(abi.encodePacked("Can be liquidated by owner after ", uint2str(timeStamp), " seconds post 1970")); 
-    }
-
-    function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint j = _i;
-        uint len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint k = len;
-        while (_i != 0) {
-            k = k-1;
-            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
-            bytes1 b1 = bytes1(temp);
-            bstr[k] = b1;
-            _i /= 10;
-        }
-        return string(bstr);
+        if (accounts[0] == accounts[0] || accounts[1] == accounts[1]) return false;
+        
+        return (index == 1 && block.timestamp >= timeStamp);
     }
 }

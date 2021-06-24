@@ -1,0 +1,91 @@
+ <div>
+      <table>
+        <tbody>
+          <tr>
+            <td>Asset</td>
+            <td>
+              <select id="asset" onChange={(e) => setAsset(e.target.value)}>
+                <option value="ETH">ETH</option>
+                <option value="USDC">USDC</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Amount</td>
+            <td>
+              <input
+                id="amount"
+                type="text"
+                onChange={(e) => setAmount(parseInt(e.target.value))}
+              ></input>
+            </td>
+          </tr>
+          <tr>
+            <td>Liquidation</td>
+            <td>
+              <select
+                id="liquidation"
+                onChange={(e) => setLiquidation(e.target.value)}
+              >
+                <option value="Time">Time</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Time</td>
+            <td>
+              <input
+                type="datetime-local"
+                onChange={(e) =>
+                  setLiquidationTime(
+                    Math.ceil(new Date(e.target.value).getTime() / 1000)
+                  )
+                }
+              ></input>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button onClick={createCollateral}>Create Collateral</button>
+    </div>
+
+
+<TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center">Asset</TableCell>
+                      <TableCell align="center">Sum</TableCell>
+                      <TableCell align="center">Visuals</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {values
+                      ? Object.keys(values).map((key, index) => (
+                          <TableRow>
+                            <TableCell>{values[key].name}</TableCell>
+                            <TableCell>
+                              {values[key].sum /
+                                Math.pow(10, values[key].decimals)}{" "}
+                              {key}
+                            </TableCell>
+                            <TableCell>
+                              {values[key].collaterals.map((collateral) => (
+                                <Box
+                                  width={Math.ceil(
+                                    (collateral.amount / values[key].sum) * 300
+                                  )}
+                                >
+                                  <Paper
+                                    className="horizontal-span"
+                                    elevation={1}
+                                  ></Paper>
+                                </Box>
+                              ))}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : ""}
+                  </TableBody>
+                </Table>
+              </TableContainer>

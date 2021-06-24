@@ -29,13 +29,19 @@
 
 .appbar {
   height: 50px;
+  width: 100%;
 }
+
 .body-vertical-span {
   height: calc(100vh - 50px);
 }
 
+.horizontal-span {
+  left: 0px;
+  right: 0px;
+  height: 15px;
+}
+
 .connect-wallet {
-  position: absolute;
-  left: calc(100% - 300px);
-  width: 200px;
+  width: 150px;
 }
