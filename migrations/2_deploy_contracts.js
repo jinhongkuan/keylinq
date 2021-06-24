@@ -25,16 +25,16 @@ module.exports = async function (deployer, network, accounts) {
     { gasLimit: 1000000 }
   );
 
-  let response = await collaterizeContract.methods
-    .createCollateralETH(
-      2,
-      "Commissioned sculpture",
-      countContract.options.address,
-      2
-    )
-    .send({ from: accounts[0], value: web3.utils.toWei("0.03", "ether") });
+  // let response = await collaterizeContract.methods
+  //   .createCollateralETH(
+  //     2,
+  //     "Commissioned sculpture",
+  //     countContract.options.address,
+  //     2
+  //   )
+  //   .send({ from: accounts[0], value: web3.utils.toWei("0.03", "ether") });
 
-  let id = response.events.Created.returnValues.id;
+  // let id = response.events.Created.returnValues.id;
 
-  await collaterizeContract.methods.transfer(accounts[1], id, 1);
+  // await collaterizeContract.methods.transfer(accounts[1], id, 1);
 };

@@ -61,6 +61,7 @@ const styles = (theme) => ({
     width: 375,
     minWidth: 275,
     minHeight: 200,
+    marginBottom: 25,
     position: "relative",
   },
 
@@ -108,6 +109,16 @@ const styles = (theme) => ({
   },
 
   amount_input: {},
+
+  tool_bar: {
+    justifyContent: "flex-end",
+    display: "flex",
+    width: "100%",
+  },
+
+  connect_wallet: {
+    width: 150,
+  },
 });
 
 const App = (props) => {
@@ -198,6 +209,13 @@ const App = (props) => {
     return true;
   };
 
+  useEffect(() => {
+    (async () => {
+      if (window.ethereum) await connectWeb3();
+      console.log("start");
+    })();
+  }, []);
+
   const handleBackdropClose = () => {
     setOpenBackdrop(false);
   };
@@ -212,21 +230,17 @@ const App = (props) => {
       </Backdrop>
       <AppBar position="static" className="appbar">
         <Toolbar variant="dense">
-          <Grid container>
-            <Grid item xs={11}>
-              <Typography variant="h5">Two-Way Street</Typography>
-            </Grid>
-            <Grid item xs={1}>
-              <Button
-                variant="contained"
-                color={account ? "disabled" : "secondary"}
-                className="connect-wallet"
-                onClick={connectWeb3}
-              >
-                {account ? account.substr(0, 10) + "..." : "Connect"}
-              </Button>
-            </Grid>
-          </Grid>
+          <Typography variant="h5">BitVault</Typography>
+          <Box className={classes.tool_bar}>
+            <Button
+              variant="contained"
+              color={account ? "disabled" : "secondary"}
+              className={classes.connect_wallet}
+              onClick={connectWeb3}
+            >
+              {account ? account.substr(0, 10) + "..." : "Connect"}
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
       <Router>
@@ -431,7 +445,7 @@ const Create = ({ values, contract, web3, classes, setOpenBackdrop }) => {
       setLCContract(lc[0]);
       setLCAddresses(lc);
     })();
-  });
+  }, []);
 
   const createCollateral = async () => {
     setOpenBackdrop(true);
@@ -447,14 +461,13 @@ const Create = ({ values, contract, web3, classes, setOpenBackdrop }) => {
         )
         .send({
           value: Math.ceil(
-            amount,
-            Math.pow(10, constants.assets[asset].decimals)
+            amount * Math.pow(10, constants.assets[asset].decimals)
           ),
         });
     }
 
     setOpenBackdrop(false);
-    window.location("/");
+    window.location = "/";
   };
 
   const handleAssetSelection = (e) => {
