@@ -129,7 +129,6 @@ const App = (props) => {
   const [collateralList, setCollateralList] = useState(null);
   const [openBackdrop, setOpenBackdrop] = useState(false);
   const connectWeb3 = async () => {
-    console.log("connected");
     // Get network provider and web3 instance.
     let web3;
     try {
@@ -442,6 +441,7 @@ const Create = ({ values, contract, web3, classes, setOpenBackdrop }) => {
       const networkId = await web3.eth.net.getId();
 
       const lc = [CountLiquidationCheck.networks[networkId].address];
+      console.log(lc);
       setLCContract(lc[0]);
       setLCAddresses(lc);
     })();

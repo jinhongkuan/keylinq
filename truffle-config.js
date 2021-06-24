@@ -1,5 +1,6 @@
 const path = require("path");
 const HDWalletProvider = require("@truffle/hdwallet-provider");
+const secret = require("./secret.json");
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
@@ -21,6 +22,15 @@ module.exports = {
       confirmations: 2,
       timeoutBlocks: 200,
       skipDryRun: true,
+    },
+
+    rinkeby: {
+      provider: function () {
+        return new HDWalletProvider(process.env.val2, secret.rinkeby);
+      },
+      network_id: 4,
+      gas: 4500000,
+      gasPrice: 10000000000,
     },
   },
   compilers: {
