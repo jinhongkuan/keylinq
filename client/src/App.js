@@ -4,8 +4,10 @@ import ILiquidationCheck from "./contracts/ILiquidationCheck.json";
 import CountLiquidationCheck from "./contracts/CountLiquidationCheck.json";
 
 import IERC20 from "./contracts/IERC20.json";
-import IERC20Metadata from "./contracts/IERC20.json";
+import IERC20Metadata from "./contracts/IERC20Metadata.json";
+import TestERC20 from "./contracts/ERC20.json";
 import getWeb3 from "./getWeb3";
+import Contracting from "./Contracting.js";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
 import Box from "@material-ui/core/Box";
@@ -123,6 +125,7 @@ const styles = (theme) => ({
 
 const App = (props) => {
   const { classes } = props;
+  const [page, setPage] = useState(null);
   const [web3, setWeb3] = useState(null);
   const [account, setAccount] = useState(null);
   const [contract, setContract] = useState(null);
@@ -168,7 +171,8 @@ const App = (props) => {
       } else {
         var erc20MetadataContract = new web3.eth.Contract(
           IERC20Metadata.abi,
-          collateral.token
+          collateral.token,
+          { from: account, gasLimit: 60000 }
         );
         symbol = await erc20MetadataContract.methods.symbol().call();
         decimals = await erc20MetadataContract.methods.decimals().call();
@@ -177,7 +181,8 @@ const App = (props) => {
       let liquidateAs = [];
       const lc = new web3.eth.Contract(
         ILiquidationCheck.abi,
-        collateral.liquidation
+        collateral.liquidation,
+        { from: account, gasLimit: 60000 }
       );
 
       for (let j = 0; j < collateral.accounts.length; j++) {
@@ -229,7 +234,9 @@ const App = (props) => {
       </Backdrop>
       <AppBar position="static" className="appbar">
         <Toolbar variant="dense">
-          <Typography variant="h5">BitVault</Typography>
+          <Typography variant="h5">
+            {page == "Contracts" ? "Job Contracting Site" : "Keylink"}
+          </Typography>
           <Box className={classes.tool_bar}>
             <Button
               variant="contained"
@@ -255,6 +262,7 @@ const App = (props) => {
                 contract={contract}
                 web3={web3}
                 setOpenBackdrop={setOpenBackdrop}
+                setPage={setPage}
               />
             )}
           />
@@ -264,9 +272,25 @@ const App = (props) => {
             render={() => (
               <Create
                 contract={contract}
+                account={account}
                 web3={web3}
                 classes={classes}
                 setOpenBackdrop={setOpenBackdrop}
+                setPage={setPage}
+              />
+            )}
+          ></Route>
+
+          <Route
+            path="/contracts"
+            render={() => (
+              <Contracting
+                contract={contract}
+                account={account}
+                web3={web3}
+                classes={classes}
+                setOpenBackdrop={setOpenBackdrop}
+                setPage={setPage}
               />
             )}
           ></Route>
@@ -287,6 +311,7 @@ const Home = ({
   contract,
   web3,
   setOpenBackdrop,
+  setPage,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -308,20 +333,38 @@ const Home = ({
     setOpen(false);
     if (cont) {
       setOpenBackdrop(true);
-      let response = await contract.methods
-        .transfer(document.getElementById("recepient_address").value, id, index)
-        .send();
-      setOpenBackdrop(false);
-      window.location.reload(false);
+      try {
+        let response = await contract.methods
+          .transfer(
+            document.getElementById("recepient_address").value,
+            id,
+            index
+          )
+          .send();
+        window.location.reload(false);
+      } catch (error) {
+        console.log(error);
+        setOpenBackdrop(false);
+      }
     }
   };
 
   const handleUnlock = async (col, index) => {
     setOpenBackdrop(true);
-    let response = await contract.methods.liquidate(col.id, index).send();
-    setOpenBackdrop(false);
-    window.location.reload(false);
+    try {
+      let response = await contract.methods.liquidate(col.id, index).send();
+      window.location.reload(false);
+    } catch (error) {
+      console.log(error);
+      setOpenBackdrop(false);
+    }
   };
+
+  useEffect(() => {
+    (async () => {
+      setPage("Home");
+    })();
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -421,53 +464,130 @@ const Home = ({
   );
 };
 
-const Create = ({ values, contract, web3, classes, setOpenBackdrop }) => {
+const Create = ({
+  values,
+  contract,
+  web3,
+  classes,
+  setOpenBackdrop,
+  account,
+  setPage,
+}) => {
   if (!web3) window.location = "/";
   const [asset, setAsset] = useState("ETH");
   const [name, setName] = useState("");
   const [accounts, setAccounts] = useState(2);
   const [lcContract, setLCContract] = useState(null);
   const [lcAddresses, setLCAddresses] = useState(null);
+  const [constants, setConstants] = useState(null);
 
   var [amount, setAmount] = useState(0);
-  const constants = {
-    assets: {
-      ETH: { address: "0x" + "0" * 40, decimals: 18 },
-      USDC: { address: "", decimals: 18 },
-    },
-  };
+
   useEffect(() => {
     (async () => {
+      setPage("Create");
       const networkId = await web3.eth.net.getId();
 
       const lc = [CountLiquidationCheck.networks[networkId].address];
       console.log(lc);
       setLCContract(lc[0]);
       setLCAddresses(lc);
+
+      const tokenList = [TestERC20.networks[networkId].address];
+      const _constants = {
+        assets: {
+          Ether: {
+            address: "NATIVE",
+            decimals: 18,
+            balance: await web3.eth.getBalance(account),
+            symbol: "ETH",
+          },
+        },
+      };
+      for (let i = 0; i < tokenList.length; i++) {
+        const addr = tokenList[i];
+        let erc20metadatacontract = new web3.eth.Contract(
+          IERC20Metadata.abi,
+          addr,
+          { from: account, gasLimit: 60000 }
+        );
+        let erc20contract = new web3.eth.Contract(IERC20.abi, addr);
+        console.log(erc20metadatacontract.methods);
+        let name = await erc20metadatacontract.methods.name().call();
+        let symbol = await erc20metadatacontract.methods.symbol().call();
+        let decimals = await erc20metadatacontract.methods.decimals().call();
+        let balance = await erc20contract.methods.balanceOf(account).call();
+
+        _constants.assets[name] = {
+          address: addr,
+          decimals: decimals,
+          balance: balance,
+          symbol: symbol,
+        };
+
+        console.log(_constants[name]);
+      }
+      setConstants(_constants);
     })();
   }, []);
 
   const createCollateral = async () => {
     setOpenBackdrop(true);
     let response;
+    let hasApproved = false;
+    let ERC20Contract;
 
-    if (web3.utils.hexToNumber(constants.assets[asset].address) == 0) {
-      response = await contract.methods
-        .createCollateralETH(
-          accounts,
-          name,
-          lcContract,
-          web3.utils.toHex(accounts)
-        )
-        .send({
-          value: Math.ceil(
-            amount * Math.pow(10, constants.assets[asset].decimals)
-          ),
-        });
+    try {
+      if (constants.assets[asset].address == "NATIVE") {
+        response = await contract.methods
+          .createCollateralETH(
+            accounts,
+            name,
+            lcContract,
+            web3.utils.toHex(accounts)
+          )
+          .send({
+            value: Math.ceil(
+              amount * Math.pow(10, constants.assets[asset].decimals)
+            ),
+          });
+      } else {
+        let am = Math.ceil(
+          amount * Math.pow(10, constants.assets[asset].decimals)
+        ).toString();
+
+        console.log(am);
+
+        ERC20Contract = new web3.eth.Contract(
+          IERC20.abi,
+          constants.assets[asset].address,
+          { from: account, gasLimit: 60000 }
+        );
+        await ERC20Contract.methods
+          .approve(contract.options.address, am)
+          .send();
+        hasApproved = true;
+
+        response = await contract.methods
+          .createCollateralERC20(
+            constants.assets[asset].address,
+            am,
+            accounts,
+            name,
+            lcContract,
+            web3.utils.toHex(accounts)
+          )
+          .send();
+      }
+
+      window.location = "/";
+    } catch (error) {
+      console.log(error);
+      // if (hasApproved) {
+      //   await ERC20Contract.methods.approve(contract.options.address, 0).send();
+      // }
+      setOpenBackdrop(false);
     }
-
-    setOpenBackdrop(false);
-    window.location = "/";
   };
 
   const handleAssetSelection = (e) => {
@@ -503,7 +623,10 @@ const Create = ({ values, contract, web3, classes, setOpenBackdrop }) => {
                     {constants
                       ? Object.keys(constants.assets).map((key, index) => (
                           <option value={key}>
-                            {key} ({constants.assets[key].address})
+                            {key} (
+                            {constants.assets[key].balance /
+                              Math.pow(10, constants.assets[key].decimals)}{" "}
+                            {constants.assets[key].symbol})
                           </option>
                         ))
                       : ""}

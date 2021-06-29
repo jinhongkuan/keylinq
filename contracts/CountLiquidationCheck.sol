@@ -1,9 +1,11 @@
 pragma solidity ^0.8.3; 
 
-import "./ILiquidationCheck.sol"; 
+import "./Collaterize.sol"; 
+import "./ILiquidationCheck.sol";
 
 contract CountLiquidationCheck is ILiquidationCheck {
 
+    
     constructor() ILiquidationCheck() {}
 
     function liquidationCheck(address[] memory accounts, uint256 index, bytes memory args) 
