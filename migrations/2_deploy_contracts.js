@@ -1,4 +1,5 @@
-const Collaterize = artifacts.require("Collaterize");
+const Keylink = artifacts.require("Keylink");
+const KeylinkDelegator = artifacts.require("KeylinkDelegator");
 const CountLiquidationCheck = artifacts.require("CountLiquidationCheck");
 const ERC20 = artifacts.require("ERC20");
 
@@ -9,7 +10,8 @@ hexToBytes = function (hex) {
 };
 
 module.exports = async function (deployer, network, accounts) {
-  await deployer.deploy(Collaterize);
+  await deployer.deploy(Keylink);
+  await deployer.deploy(KeylinkDelegator, (await Keylink.deployed()).address);
   await deployer.deploy(CountLiquidationCheck);
   await deployer.deploy(
     ERC20,
@@ -27,10 +29,10 @@ module.exports = async function (deployer, network, accounts) {
     }
   );
 
-  let collaterizeContract = await Collaterize.deployed();
-  collaterizeContract = new web3.eth.Contract(
-    collaterizeContract.abi,
-    collaterizeContract.address,
+  let keylinkContract = await Keylink.deployed();
+  keylinkContract = new web3.eth.Contract(
+    keylinkContract.abi,
+    keylinkContract.address,
     { gasLimit: 1000000 }
   );
 
@@ -40,20 +42,21 @@ module.exports = async function (deployer, network, accounts) {
     ERC20Contract.address,
     { gasLimit: 1000000 }
   );
+
   await ERC20Contract.methods
-    .approve(collaterizeContract.options.address, 1000)
+    .approve(keylinkContract.options.address, 1000)
     .send({ from: accounts[0] });
 
-  let response = await collaterizeContract.methods
-    .createCollateralERC20(
-      ERC20Contract.options.address,
-      1000,
-      2,
-      "Commissioned sculpture",
-      countContract.options.address,
-      2
-    )
-    .send({ from: accounts[0] });
+  // let response = await collaterizeContract.methods
+  //   .createCollateralERC20(
+  //     ERC20Contract.options.address,
+  //     1000,
+  //     2,
+  //     "Commissioned sculpture",
+  //     countContract.options.address,
+  //     2
+  //   )
+  //   .send({ from: accounts[0] });
 
   // let id = response.events.Created.returnValues.id;
 

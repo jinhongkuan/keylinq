@@ -7,8 +7,9 @@ import IERC20 from "./contracts/IERC20.json";
 import IERC20Metadata from "./contracts/IERC20Metadata.json";
 import TestERC20 from "./contracts/ERC20.json";
 import getWeb3 from "./getWeb3";
-import Contracting from "./Contracting.js";
+import { Express, Request, Deposit } from "./Express.js";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { NFTStorage, File } from "nft.storage";
 
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
@@ -42,11 +43,17 @@ import { createMuiTheme } from "@material-ui/core/styles";
 import { ThemeProvider } from "@material-ui/styles";
 import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-
+import purple from "@material-ui/core/colors/purple";
 import "./App.css";
 import { IconButton } from "@material-ui/core";
 
-const theme = createMuiTheme({
+const secret = require("./secret.json");
+const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
+const ipfsCore = require("ipfs-core");
+const uint8ArrayConcat = require("uint8arrays/concat");
+const uint8ArrayToString = require("uint8arrays/to-string");
+
+const mainTheme = createMuiTheme({
   typography: {
     fontFamily: [
       "Nunito",
@@ -55,6 +62,23 @@ const theme = createMuiTheme({
       "Arial",
       "sans-serif",
     ].join(","),
+  },
+
+  palette: {
+    primary: {
+      main: "#000000",
+    },
+  },
+});
+
+const contractSiteTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#8bc34a",
+    },
+    secondary: {
+      main: "#cddc39",
+    },
   },
 });
 
@@ -105,6 +129,12 @@ const styles = (theme) => ({
     width: "100%",
   },
 
+  share_link: {
+    marginTop: 0,
+    padding: 0,
+    width: "300px",
+  },
+
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
     color: "#fff",
@@ -118,19 +148,53 @@ const styles = (theme) => ({
     width: "100%",
   },
 
+  action_dialog: {
+    justifyContent: "flex-end",
+    display: "flex",
+    width: "100%",
+    height: "100%",
+  },
+
   connect_wallet: {
     width: 150,
   },
+
+  add_collateral_bar: {
+    background: theme.palette.secondary.main,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+
+  create_request_bar: {
+    background: theme.palette.primary.main,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+
+  deposit_text_field: {
+    width: "50vw",
+  },
 });
+
+const WhiteTypography = withStyles({
+  root: {
+    color: "#FFFFFF",
+  },
+})(Typography);
 
 const App = (props) => {
   const { classes } = props;
   const [page, setPage] = useState(null);
   const [web3, setWeb3] = useState(null);
+  const [constants, setConstants] = useState(null);
   const [account, setAccount] = useState(null);
-  const [contract, setContract] = useState(null);
+  const [keylinkContract, setKeylinkContract] = useState(null);
+  const [delegatorContract, setDelegatorContract] = useState(null);
   const [collateralList, setCollateralList] = useState(null);
   const [openBackdrop, setOpenBackdrop] = useState(false);
+  const [lcAddresses, setLCAddresses] = useState(null);
+  const [ipfs, setIPFS] = useState(null);
+
   const connectWeb3 = async () => {
     // Get network provider and web3 instance.
     let web3;
@@ -142,8 +206,13 @@ const App = (props) => {
 
     // Use web3 to get the user's accounts.
     const account = (await web3.eth.getAccounts())[0];
-    // Get the contract instance.
+    // Get the keylinkContract instance.
     const networkId = await web3.eth.net.getId();
+    const ip = await ipfsCore.create();
+    const lc = [CountLiquidationCheck.networks[networkId].address];
+
+    setLCAddresses(lc);
+
     const instance = new web3.eth.Contract(
       CollaterizeContract.abi,
       CollaterizeContract.networks[networkId] &&
@@ -196,19 +265,82 @@ const App = (props) => {
         }
       }
 
+      let name;
+      try {
+        // await nftStorageClient.check(collateral.uri);
+        const dirData = [];
+        const detailsData = [];
+
+        for await (const chunk of ip.get(collateral.uri)) {
+          dirData.push(chunk);
+        }
+
+        for (const element of dirData) {
+          if (element.name == "details.json") {
+            for await (const chunk of element.content) {
+              detailsData.push(chunk);
+            }
+          }
+        }
+        const details = JSON.parse(
+          uint8ArrayToString(uint8ArrayConcat(detailsData))
+        );
+        name = details.name + " (" + details.service + ")";
+      } catch (error) {
+        console.log(error);
+        name = collateral.uri;
+      }
+
       collaterals.push({
         id: allCollaterals[i],
         amount: parseFloat(collateral.amount),
         symbol: symbol,
         decimals: parseFloat(decimals),
-        name: collateral.uri,
+        name: name,
         accounts: collateral.accounts,
         liquidation: liquidateAs,
       });
     }
+
+    const tokenList = [TestERC20.networks[networkId].address];
+    const _constants = {
+      assets: {
+        Ether: {
+          address: "NATIVE",
+          decimals: 18,
+          balance: await web3.eth.getBalance(account),
+          symbol: "ETH",
+        },
+      },
+    };
+    for (let i = 0; i < tokenList.length; i++) {
+      const addr = tokenList[i];
+      let erc20metadatacontract = new web3.eth.Contract(
+        IERC20Metadata.abi,
+        addr,
+        { from: account, gasLimit: 60000 }
+      );
+      let erc20contract = new web3.eth.Contract(IERC20.abi, addr);
+      console.log(erc20metadatacontract.methods);
+      let name = await erc20metadatacontract.methods.name().call();
+      let symbol = await erc20metadatacontract.methods.symbol().call();
+      let decimals = await erc20metadatacontract.methods.decimals().call();
+      let balance = await erc20contract.methods.balanceOf(account).call();
+
+      _constants.assets[name] = {
+        address: addr,
+        decimals: decimals,
+        balance: balance,
+        symbol: symbol,
+      };
+    }
+
     setWeb3(web3);
+    setIPFS(ip);
+    setConstants(_constants);
     setAccount(account);
-    setContract(instance);
+    setKeylinkContract(instance);
+    setDelegatorContract(delegatorContract);
     setCollateralList(collaterals);
     return true;
   };
@@ -216,7 +348,6 @@ const App = (props) => {
   useEffect(() => {
     (async () => {
       if (window.ethereum) await connectWeb3();
-      console.log("start");
     })();
   }, []);
 
@@ -224,32 +355,36 @@ const App = (props) => {
     setOpenBackdrop(false);
   };
   return (
-    <ThemeProvider theme={theme}>
-      <Backdrop
-        className={classes.backdrop}
-        open={openBackdrop}
-        onClick={handleBackdropClose}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      <AppBar position="static" className="appbar">
-        <Toolbar variant="dense">
-          <Typography variant="h5">
-            {page == "Contracts" ? "Job Contracting Site" : "Keylink"}
-          </Typography>
-          <Box className={classes.tool_bar}>
-            <Button
-              variant="contained"
-              color={account ? "disabled" : "secondary"}
-              className={classes.connect_wallet}
-              onClick={connectWeb3}
-            >
-              {account ? account.substr(0, 10) + "..." : "Connect"}
-            </Button>
-          </Box>
-        </Toolbar>
-      </AppBar>
+    <ThemeProvider theme={mainTheme}>
       <Router>
+        <Backdrop
+          className={classes.backdrop}
+          open={openBackdrop}
+          onClick={handleBackdropClose}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        <AppBar position="static" className="appbar">
+          <Toolbar variant="dense">
+            <Link to="/" style={{ textDecoration: "none", color: "#FFF" }}>
+              <Typography variant="h5" noWrap style={{ width: 200 }}>
+                {page == "Express" ? "Keylink Express" : "Keylink"}
+              </Typography>
+            </Link>
+
+            <Box className={classes.tool_bar}>
+              <Button
+                variant="contained"
+                color={account ? "disabled" : "secondary"}
+                className={classes.connect_wallet}
+                onClick={connectWeb3}
+              >
+                {account ? account.substr(0, 10) + "..." : "Connect"}
+              </Button>
+            </Box>
+          </Toolbar>
+        </AppBar>
+
         <Switch>
           <Route
             exact
@@ -259,7 +394,7 @@ const App = (props) => {
                 collateralList={collateralList}
                 account={account}
                 classes={classes}
-                contract={contract}
+                keylinkContract={keylinkContract}
                 web3={web3}
                 setOpenBackdrop={setOpenBackdrop}
                 setPage={setPage}
@@ -268,10 +403,26 @@ const App = (props) => {
           />
 
           <Route
-            path="/create"
+            path="/create/"
             render={() => (
               <Create
-                contract={contract}
+                keylinkContract={keylinkContract}
+                account={account}
+                web3={web3}
+                classes={classes}
+                setOpenBackdrop={setOpenBackdrop}
+                setPage={setPage}
+                constants={constants}
+                lcAddresses={lcAddresses}
+              />
+            )}
+          ></Route>
+
+          <Route
+            path="/express/"
+            render={() => (
+              <Express
+                keylinkContract={keylinkContract}
                 account={account}
                 web3={web3}
                 classes={classes}
@@ -282,15 +433,35 @@ const App = (props) => {
           ></Route>
 
           <Route
-            path="/contracts"
+            path="/request/"
             render={() => (
-              <Contracting
-                contract={contract}
+              <Request
+                keylinkContract={keylinkContract}
                 account={account}
                 web3={web3}
                 classes={classes}
                 setOpenBackdrop={setOpenBackdrop}
                 setPage={setPage}
+                constants={constants}
+                ipfs={ipfs}
+              />
+            )}
+          ></Route>
+
+          <Route
+            path="/deposit/:cid?"
+            render={({ match }) => (
+              <Deposit
+                keylinkContract={keylinkContract}
+                account={account}
+                web3={web3}
+                classes={classes}
+                constants={constants}
+                setOpenBackdrop={setOpenBackdrop}
+                setPage={setPage}
+                lcAddresses={lcAddresses}
+                ipfs={ipfs}
+                match={match}
               />
             )}
           ></Route>
@@ -308,7 +479,7 @@ const Home = ({
   collateralList,
   account,
   classes,
-  contract,
+  keylinkContract,
   web3,
   setOpenBackdrop,
   setPage,
@@ -334,7 +505,7 @@ const Home = ({
     if (cont) {
       setOpenBackdrop(true);
       try {
-        let response = await contract.methods
+        let response = await keylinkContract.methods
           .transfer(
             document.getElementById("recepient_address").value,
             id,
@@ -352,7 +523,9 @@ const Home = ({
   const handleUnlock = async (col, index) => {
     setOpenBackdrop(true);
     try {
-      let response = await contract.methods.liquidate(col.id, index).send();
+      let response = await keylinkContract.methods
+        .liquidate(col.id, index)
+        .send();
       window.location.reload(false);
     } catch (error) {
       console.log(error);
@@ -367,7 +540,7 @@ const Home = ({
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={mainTheme}>
       <Dialog
         open={open}
         onClose={handleClose}
@@ -449,11 +622,22 @@ const Home = ({
 
             <br />
             <div class="center">
-              <Link to="/create">
-                <Button variant="contained" color="primary">
-                  Add Collateral
-                </Button>
-              </Link>
+              <Grid container spacing={2} justify="center">
+                <Grid item>
+                  <Link to="/create" style={{ textDecoration: "none" }}>
+                    <Button variant="contained" color="primary">
+                      Create Vault
+                    </Button>
+                  </Link>
+                </Grid>
+                <Grid item>
+                  <Link to="/express" style={{ textDecoration: "none" }}>
+                    <Button variant="contained" color="primary">
+                      Quickstart
+                    </Button>
+                  </Link>
+                </Grid>
+              </Grid>
             </div>
 
             <br />
@@ -466,20 +650,19 @@ const Home = ({
 
 const Create = ({
   values,
-  contract,
+  keylinkContract,
   web3,
   classes,
   setOpenBackdrop,
   account,
   setPage,
+  constants,
+  lcAddresses,
 }) => {
   if (!web3) window.location = "/";
   const [asset, setAsset] = useState("ETH");
   const [name, setName] = useState("");
   const [accounts, setAccounts] = useState(2);
-  const [lcContract, setLCContract] = useState(null);
-  const [lcAddresses, setLCAddresses] = useState(null);
-  const [constants, setConstants] = useState(null);
 
   var [amount, setAmount] = useState(0);
 
@@ -487,47 +670,6 @@ const Create = ({
     (async () => {
       setPage("Create");
       const networkId = await web3.eth.net.getId();
-
-      const lc = [CountLiquidationCheck.networks[networkId].address];
-      console.log(lc);
-      setLCContract(lc[0]);
-      setLCAddresses(lc);
-
-      const tokenList = [TestERC20.networks[networkId].address];
-      const _constants = {
-        assets: {
-          Ether: {
-            address: "NATIVE",
-            decimals: 18,
-            balance: await web3.eth.getBalance(account),
-            symbol: "ETH",
-          },
-        },
-      };
-      for (let i = 0; i < tokenList.length; i++) {
-        const addr = tokenList[i];
-        let erc20metadatacontract = new web3.eth.Contract(
-          IERC20Metadata.abi,
-          addr,
-          { from: account, gasLimit: 60000 }
-        );
-        let erc20contract = new web3.eth.Contract(IERC20.abi, addr);
-        console.log(erc20metadatacontract.methods);
-        let name = await erc20metadatacontract.methods.name().call();
-        let symbol = await erc20metadatacontract.methods.symbol().call();
-        let decimals = await erc20metadatacontract.methods.decimals().call();
-        let balance = await erc20contract.methods.balanceOf(account).call();
-
-        _constants.assets[name] = {
-          address: addr,
-          decimals: decimals,
-          balance: balance,
-          symbol: symbol,
-        };
-
-        console.log(_constants[name]);
-      }
-      setConstants(_constants);
     })();
   }, []);
 
@@ -539,11 +681,11 @@ const Create = ({
 
     try {
       if (constants.assets[asset].address == "NATIVE") {
-        response = await contract.methods
+        response = await keylinkContract.methods
           .createCollateralETH(
             accounts,
             name,
-            lcContract,
+            lcAddresses[0],
             web3.utils.toHex(accounts)
           )
           .send({
@@ -564,17 +706,17 @@ const Create = ({
           { from: account, gasLimit: 60000 }
         );
         await ERC20Contract.methods
-          .approve(contract.options.address, am)
+          .approve(keylinkContract.options.address, am)
           .send();
         hasApproved = true;
 
-        response = await contract.methods
+        response = await keylinkContract.methods
           .createCollateralERC20(
             constants.assets[asset].address,
             am,
             accounts,
             name,
-            lcContract,
+            lcAddresses[0],
             web3.utils.toHex(accounts)
           )
           .send();
@@ -584,7 +726,7 @@ const Create = ({
     } catch (error) {
       console.log(error);
       // if (hasApproved) {
-      //   await ERC20Contract.methods.approve(contract.options.address, 0).send();
+      //   await ERC20Contract.methods.approve(keylinkContract.options.address, 0).send();
       // }
       setOpenBackdrop(false);
     }
@@ -606,14 +748,39 @@ const Create = ({
           <Table>
             <TableBody>
               <TableRow>
+                <TableCell colSpan={2} className={classes.add_collateral_bar}>
+                  <div style={{ display: "flex" }}>
+                    <div style={{ width: "50%" }}>
+                      <Box alignItems="flex-end">
+                        <WhiteTypography noWrap variant="subtitle1">
+                          Create Vault
+                        </WhiteTypography>
+                      </Box>
+                    </div>
+                    <div style={{ width: "50%" }}>
+                      <Box
+                        className={classes.action_dialog}
+                        alignItems="flex-end"
+                      >
+                        <WhiteTypography variant="caption">
+                          Powered by <b>Keylink</b>
+                        </WhiteTypography>
+                      </Box>
+                    </div>
+                  </div>
+                </TableCell>
+              </TableRow>
+              <TableRow>
                 <TableCell>Descriptor</TableCell>
                 <TableCell>
-                  <TextField
-                    label=""
-                    onChange={(e) => {
-                      setName(e.target.value);
-                    }}
-                  ></TextField>
+                  <FormControl>
+                    <TextField
+                      label=""
+                      onChange={(e) => {
+                        setName(e.target.value);
+                      }}
+                    ></TextField>
+                  </FormControl>
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -630,40 +797,43 @@ const Create = ({
                           </option>
                         ))
                       : ""}
-                    <option value="custom">Custom ERC20 Contract</option>
                   </Select>
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Amount</TableCell>
                 <TableCell>
-                  <TextField
-                    label=""
-                    value={amount}
-                    className={classes.amount_input}
-                    onChange={(e) => parseFloat(setAmount(e.target.value))}
-                  ></TextField>
+                  <FormControl>
+                    <TextField
+                      label=""
+                      value={amount}
+                      className={classes.amount_input}
+                      onChange={(e) => parseFloat(setAmount(e.target.value))}
+                    ></TextField>
+                  </FormControl>
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Keys</TableCell>
                 <TableCell>
-                  <Select
-                    onChange={(e) => {
-                      setAccounts(e.target.value);
-                    }}
-                    value={accounts}
-                  >
-                    {[...Array(4).keys()].map((val) => (
-                      <option value={val + 2}>{val + 2}</option>
-                    ))}
-                  </Select>
+                  <FormControl>
+                    <Select
+                      onChange={(e) => {
+                        setAccounts(e.target.value);
+                      }}
+                      value={accounts}
+                    >
+                      {[...Array(4).keys()].map((val) => (
+                        <option value={val + 2}>{val + 2}</option>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </TableCell>
               </TableRow>
             </TableBody>
           </Table>
           <Grid container justify="flex-end">
-            <Link to="/">
+            <Link to="/" style={{ textDecoration: "none" }}>
               <Button>Back</Button>
             </Link>
             <Button onClick={createCollateral}>Create</Button>

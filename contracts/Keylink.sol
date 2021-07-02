@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
+// Jin Hong Kuan 2021 Copyrighted
 pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol"; 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol"; 
 
 import "./ILiquidationCheck.sol"; 
+import "./IDelegator.sol"; 
 
-contract Collaterize {
+
+contract Keylink {
 
     event Created(address from, uint256 id);
     event TransferKey(address from, address to, uint256 id);
@@ -26,6 +29,7 @@ contract Collaterize {
     mapping(uint256 => mapping(uint256=>address)) private _collateralApprovals; 
     mapping(uint256 => mapping(uint256=>address)) private _collateralDelegates; 
     mapping(uint256 => Collateral) public _collaterals;
+    mapping(address => bool) _isDelegator; 
 
     uint256 private _counter;
 
@@ -38,7 +42,7 @@ contract Collaterize {
     }
 
     modifier isEffectiveOwner(address caller, uint256 id, uint256 index) {
-        require((_collateralDelegates[id][index] == address(0) && _collaterals[id].accounts[index] == caller) || _collateralDelegates[id][index] == caller, "Effective ownership criteria not fulfilled");
+        require(getEffectiveOwner(id, index) == caller, "Effective ownership criteria not fulfilled");
         _;
     }
 
@@ -93,13 +97,19 @@ contract Collaterize {
     function getEffectiveOwners(uint256 id) public view returns(address[] memory) {
         address[] memory accounts = new address[](_collaterals[id].accounts.length); 
         for (uint i = 0; i < _collaterals[id].accounts.length; i++) {
-            if (_collateralDelegates[id][i] == address(0)) {
-                accounts[i] = _collaterals[id].accounts[i];
-            } else {
-                accounts[i] = _collateralDelegates[id][i];
-            }
+            accounts[i] = getEffectiveOwner(id, i);
         }
         return accounts;
+    }
+
+    function getEffectiveOwner(uint256 id, uint256 index) public view returns(address) {
+        address owner = _collaterals[id].accounts[index];
+        address delegatedTo = _isDelegator[owner] ? IDelegator(owner).delegatedTo(id, index) : _collateralDelegates[id][index]; 
+        if (delegatedTo == address(0)) {
+            return owner;
+        } else {
+            return delegatedTo;
+        }
     }
 
     function transfer(address to, uint256 id, uint256 index) isOwner(msg.sender, id, index) public {
@@ -136,6 +146,8 @@ contract Collaterize {
     }
 
     function _transfer(address from, address to, uint256 id, uint256 index) internal {
+        _isDelegator[to] = _callDelegationCheck(to);
+        
         bool gainedOwnership = true;
         for (uint i = 0; i < _collaterals[id].accounts.length; i++) {
             if (_collaterals[id].accounts[i] == to) {
@@ -151,6 +163,9 @@ contract Collaterize {
         }
         if (gainedOwnership) _ownedBalance[to] += 1;
         if (lostOwnership) _ownedBalance[from] -= 1;
+
+        _collateralApprovals[id][index] == address(0);
+        _collateralDelegates[id][index] == address(0);
     }
 
     function _create(address from, address token, uint256 amount, uint256 accounts, string memory uri, address liquidation, bytes memory args) internal {
@@ -187,6 +202,28 @@ contract Collaterize {
            
         }
         delete _collaterals[id]; 
+    }
+
+    function _callDelegationCheck(address holder) public returns (bool) {
+
+        bool success;
+        bytes memory data = abi.encodeWithSignature("isDelegator()");
+
+        assembly {
+            success := call(
+                gas(),            // gas remaining
+                holder,         // destination address
+                0,              // no ether
+                add(data, 32),  // input buffer (starts after the first 32 bytes in the `data` array)
+                mload(data),    // input length (loaded from the first 32 bytes in the `data` array)
+                0,              // output buffer
+                0               // output length
+            )
+        }
+
+        require(success, "delegation chck failed");
+
+        return success;
     }
 
 

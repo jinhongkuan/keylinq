@@ -1,6 +1,6 @@
 pragma solidity ^0.8.3; 
 
-import "./Collaterize.sol"; 
+import "./Keylink.sol"; 
 import "./ILiquidationCheck.sol";
 
 contract CountLiquidationCheck is ILiquidationCheck {
