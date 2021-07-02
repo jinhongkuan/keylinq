@@ -453,7 +453,7 @@ const Deposit = ({
     try {
       // const status = await nftStorageClient.check(cid);
       console.log(cid);
-      setOpenBackdrop(true);
+      console.log(ipfs);
 
       const dirData = [];
       const detailsData = [];
@@ -462,6 +462,8 @@ const Deposit = ({
       for await (const chunk of ipfs.get(cid)) {
         dirData.push(chunk);
       }
+
+      setOpenBackdrop(true);
 
       for (const element of dirData) {
         if (element.name == "details.json") {
