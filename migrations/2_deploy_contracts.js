@@ -36,16 +36,16 @@ module.exports = async function (deployer, network, accounts) {
     { gasLimit: 1000000 }
   );
 
-  let ERC20Contract = await ERC20.deployed();
-  ERC20Contract = new web3.eth.Contract(
-    ERC20Contract.abi,
-    ERC20Contract.address,
-    { gasLimit: 1000000 }
-  );
+  // let ERC20Contract = await ERC20.deployed();
+  // ERC20Contract = new web3.eth.Contract(
+  //   ERC20Contract.abi,
+  //   ERC20Contract.address,
+  //   { gasLimit: 1000000 }
+  // );
 
-  await ERC20Contract.methods
-    .approve(keylinkContract.options.address, 1000)
-    .send({ from: accounts[0] });
+  // await ERC20Contract.methods
+  //   .approve(keylinkContract.options.address, 1000)
+  //   .send({ from: accounts[0] });
 
   // let response = await collaterizeContract.methods
   //   .createCollateralERC20(

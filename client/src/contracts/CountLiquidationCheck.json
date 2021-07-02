@@ -33,7 +33,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.3+commit.8d00100c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"accounts\",\"type\":\"address[]\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"args\",\"type\":\"bytes\"}],\"name\":\"liquidationCheck\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/CountLiquidationCheck.sol\":\"CountLiquidationCheck\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/CountLiquidationCheck.sol\":{\"keccak256\":\"0x5a26420b9adc85ba1e7756e11d178a8521b45f619df8c8c521f7614879709ca5\",\"urls\":[\"bzz-raw://2a472cc4a9050b19f64e868c9c4cb60f832d25682d6f254a89fd45fbdb354a65\",\"dweb:/ipfs/QmRqrNGXbFShwWDMMATLr51g8wmxz4DsYjHQYB3H94NNm1\"]},\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/IDelegator.sol\":{\"keccak256\":\"0x255cca9c0867825b93ca9f6b2347d3b51ed25c3b4c444066db9615776d7d9324\",\"license\":\"Unlicensed\",\"urls\":[\"bzz-raw://c9f086b0766ca91936eb2504b30214528f584774574a57cb877c01c6dbbb8bed\",\"dweb:/ipfs/QmNYKv9KcYDVsWddT12EJ97Mj8FcQev4HhrDmdwGkh19me\"]},\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/ILiquidationCheck.sol\":{\"keccak256\":\"0x30960a50d7f07013aab00badf24d4a49d1cb904ae5ab41c845bc9997788750a3\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://22a6bf17997062086fc1e384d3f20e06b43407cf3a91b750762694418f46a028\",\"dweb:/ipfs/QmSwF83vxuVRQQX3G8iJnVCrkknysVFqMCYXQCtwgHaP7U\"]},\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/Keylink.sol\":{\"keccak256\":\"0x6c3d4048a6dea096882f1d94e3f6677afd2f63e4348ba4f583daa6d80a651750\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://925e329c011229f611562ec501f7c26d5a4d49a7840a9e0200259bf44a937ef2\",\"dweb:/ipfs/QmenBuK7p393oB8gwB1ZKoyyYgKrrwYEj7Ys6iEFMqSnp4\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xf8e8d118a7a8b2e134181f7da655f6266aa3a0f9134b2605747139fcb0c5d835\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ec48567e7ad06acb670980d5cdf3fd7f3949bf12894f02d68c3bb43e75aa84f\",\"dweb:/ipfs/QmaG3R2J9cz92YT77vFjYrjMNU2wHp4ypwYD62HqDUqS5U\"]},\"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\":{\"keccak256\":\"0x83fe24f5c04a56091e50f4a345ff504c8bff658a76d4c43b16878c8f940c53b2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d4c3df1a7ca104b633a7d81c6c6f5192367d150cd5a32cba81f7f27012729013\",\"dweb:/ipfs/QmSim72e3ZVsfgZt8UceCvbiSuMRHR6WDsiamqNzZahGSY\"]}},\"version\":1}",
@@ -7944,8 +7945,8 @@
     "4": {
       "events": {},
       "links": {},
-      "address": "0xfD85Ad9b6914d67BD1D81965b12ba7a3620C6F73",
-      "transactionHash": "0x98ebbfa2fa73a2bece6a8b2740f9fe8bedf4db7d27f1181507eb99fa29752dc2"
+      "address": "0xd6743dacc46D942199361D97E4A3930f3b0Ef42F",
+      "transactionHash": "0x1099a86bbd3f1041af531a6f3a73720bb7f2fcb4d869e03cc5105f0062e34860"
     },
     "5777": {
       "events": {},
@@ -7961,7 +7962,8 @@
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-29T22:03:30.513Z",
+  "updatedAt": "2021-07-02T03:30:07.530Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},

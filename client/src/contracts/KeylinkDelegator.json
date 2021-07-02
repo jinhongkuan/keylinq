@@ -23,7 +23,8 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -69,7 +70,8 @@
       "name": "acquire",
       "outputs": [],
       "stateMutability": "payable",
-      "type": "function"
+      "type": "function",
+      "payable": true
     },
     {
       "inputs": [
@@ -93,7 +95,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.3+commit.8d00100c\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"keylink_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"acquire\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"delegatedTo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"},{\"internalType\":\"enum KeylinkDelegator.Mode\",\"name\":\"_mode\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"_needApproval\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"_args\",\"type\":\"bytes\"}],\"name\":\"entrust\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isDelegator\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/periphery/KeylinkDelegator.sol\":\"KeylinkDelegator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/IDelegator.sol\":{\"keccak256\":\"0x255cca9c0867825b93ca9f6b2347d3b51ed25c3b4c444066db9615776d7d9324\",\"license\":\"Unlicensed\",\"urls\":[\"bzz-raw://c9f086b0766ca91936eb2504b30214528f584774574a57cb877c01c6dbbb8bed\",\"dweb:/ipfs/QmNYKv9KcYDVsWddT12EJ97Mj8FcQev4HhrDmdwGkh19me\"]},\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/ILiquidationCheck.sol\":{\"keccak256\":\"0x30960a50d7f07013aab00badf24d4a49d1cb904ae5ab41c845bc9997788750a3\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://22a6bf17997062086fc1e384d3f20e06b43407cf3a91b750762694418f46a028\",\"dweb:/ipfs/QmSwF83vxuVRQQX3G8iJnVCrkknysVFqMCYXQCtwgHaP7U\"]},\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/Keylink.sol\":{\"keccak256\":\"0x6c3d4048a6dea096882f1d94e3f6677afd2f63e4348ba4f583daa6d80a651750\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://925e329c011229f611562ec501f7c26d5a4d49a7840a9e0200259bf44a937ef2\",\"dweb:/ipfs/QmenBuK7p393oB8gwB1ZKoyyYgKrrwYEj7Ys6iEFMqSnp4\"]},\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/libraries/BytesLib.sol\":{\"keccak256\":\"0xf75784dfc94ea43668eb195d5690a1dde1b6eda62017e73a3899721583821d29\",\"license\":\"Unlicense\",\"urls\":[\"bzz-raw://ca16cef8b94f3ac75d376489a668618f6c4595a906b939d674a883f4bf426014\",\"dweb:/ipfs/QmceGU7qhyFLSejaj6i4dEtMzXDCSF3aYDtW1UeKjXQaRn\"]},\"/C/Users/Kuan/Documents/GitHub/collaterize/contracts/periphery/KeylinkDelegator.sol\":{\"keccak256\":\"0xbb8771d6291f93908ffaed247671b42759a01b3b558ade532aa0a7c13ebb2bce\",\"license\":\"Unlicensed\",\"urls\":[\"bzz-raw://8ad0eb52d03daa9338c40e6d67bff04dd5aae8733eafbee6ebb83f239591a67c\",\"dweb:/ipfs/QmRpMdQoxmb3sCMjHMUB35F9zBhr4Td13i6caDnKPURqdX\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xf8e8d118a7a8b2e134181f7da655f6266aa3a0f9134b2605747139fcb0c5d835\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ec48567e7ad06acb670980d5cdf3fd7f3949bf12894f02d68c3bb43e75aa84f\",\"dweb:/ipfs/QmaG3R2J9cz92YT77vFjYrjMNU2wHp4ypwYD62HqDUqS5U\"]},\"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\":{\"keccak256\":\"0x83fe24f5c04a56091e50f4a345ff504c8bff658a76d4c43b16878c8f940c53b2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d4c3df1a7ca104b633a7d81c6c6f5192367d150cd5a32cba81f7f27012729013\",\"dweb:/ipfs/QmSim72e3ZVsfgZt8UceCvbiSuMRHR6WDsiamqNzZahGSY\"]}},\"version\":1}",
@@ -22807,9 +22810,17 @@
     "name": "solc",
     "version": "0.8.3+commit.8d00100c.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "4": {
+      "events": {},
+      "links": {},
+      "address": "0xC9AF555b67c0981fe8Da40DBa987947b68A6a2B6",
+      "transactionHash": "0x9e6f188fc41a46bcbfc7e02e359b61f546481696a7023efcc5755cabf8213cac"
+    }
+  },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-29T22:03:30.558Z",
+  "updatedAt": "2021-07-02T03:30:07.512Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},
