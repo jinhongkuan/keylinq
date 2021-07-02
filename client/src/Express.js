@@ -461,7 +461,7 @@ const Deposit = ({
       // }
 
       setOpenBackdrop(true);
-      const gateway = "http://ipfs.io/ipfs/";
+      const gateway = "https://ipfs.io/ipfs/";
       const details = JSON.parse(readURL(gateway + cid + "/details.json"));
       const payments = JSON.parse(readURL(gateway + cid + "/payment.json"));
 

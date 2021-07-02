@@ -267,7 +267,7 @@ const App = (props) => {
       let name;
       try {
         // await nftStorageClient.check(collateral.uri);
-        const gateway = "http://ipfs.io/ipfs/";
+        const gateway = "https://ipfs.io/ipfs/";
 
         const details = JSON.parse(
           readURL(gateway + collateral.uri + "/details.json")
