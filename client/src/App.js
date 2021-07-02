@@ -11,6 +11,7 @@ import { Express, Request, Deposit } from "./Express.js";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { NFTStorage, File } from "nft.storage";
 
+import Logo from "./resources/logo.jpg";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import Backdrop from "@material-ui/core/Backdrop";
@@ -46,12 +47,12 @@ import PropTypes from "prop-types";
 import purple from "@material-ui/core/colors/purple";
 import "./App.css";
 import { IconButton } from "@material-ui/core";
+import { readURL } from "./utils";
 
 const secret = require("./secret.json");
 const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
-const ipfsCore = require("ipfs-core");
-const uint8ArrayConcat = require("uint8arrays/concat");
-const uint8ArrayToString = require("uint8arrays/to-string");
+// const uint8ArrayConcat = require("uint8arrays/concat");
+// const uint8ArrayToString = require("uint8arrays/to-string");
 
 const mainTheme = createMuiTheme({
   typography: {
@@ -193,7 +194,6 @@ const App = (props) => {
   const [collateralList, setCollateralList] = useState(null);
   const [openBackdrop, setOpenBackdrop] = useState(false);
   const [lcAddresses, setLCAddresses] = useState(null);
-  const [ipfs, setIPFS] = useState(null);
 
   const connectWeb3 = async () => {
     // Get network provider and web3 instance.
@@ -208,7 +208,6 @@ const App = (props) => {
     const account = (await web3.eth.getAccounts())[0];
     // Get the keylinkContract instance.
     const networkId = await web3.eth.net.getId();
-    const ip = await ipfsCore.create();
     const lc = [CountLiquidationCheck.networks[networkId].address];
 
     setLCAddresses(lc);
@@ -268,22 +267,10 @@ const App = (props) => {
       let name;
       try {
         // await nftStorageClient.check(collateral.uri);
-        const dirData = [];
-        const detailsData = [];
+        const gateway = "http://ipfs.io/ipfs/";
 
-        for await (const chunk of ip.get(collateral.uri)) {
-          dirData.push(chunk);
-        }
-
-        for (const element of dirData) {
-          if (element.name == "details.json") {
-            for await (const chunk of element.content) {
-              detailsData.push(chunk);
-            }
-          }
-        }
         const details = JSON.parse(
-          uint8ArrayToString(uint8ArrayConcat(detailsData))
+          readURL(gateway + collateral.uri + "/details.json")
         );
         name = details.name + " (" + details.service + ")";
       } catch (error) {
@@ -336,7 +323,6 @@ const App = (props) => {
     }
 
     setWeb3(web3);
-    setIPFS(ip);
     setConstants(_constants);
     setAccount(account);
     setKeylinkContract(instance);
@@ -367,9 +353,10 @@ const App = (props) => {
         <AppBar position="static" className="appbar">
           <Toolbar variant="dense">
             <Link to="/" style={{ textDecoration: "none", color: "#FFF" }}>
-              <Typography variant="h5" noWrap style={{ width: 200 }}>
+              <img src={Logo} style={{ height: 50 }} />
+              {/* <Typography variant="h5" noWrap style={{ width: 200 }}>
                 {page == "Express" ? "Keylink Express" : "Keylink"}
-              </Typography>
+              </Typography> */}
             </Link>
 
             <Box className={classes.tool_bar}>
@@ -443,7 +430,6 @@ const App = (props) => {
                 setOpenBackdrop={setOpenBackdrop}
                 setPage={setPage}
                 constants={constants}
-                ipfs={ipfs}
               />
             )}
           ></Route>
@@ -460,7 +446,6 @@ const App = (props) => {
                 setOpenBackdrop={setOpenBackdrop}
                 setPage={setPage}
                 lcAddresses={lcAddresses}
-                ipfs={ipfs}
                 match={match}
               />
             )}

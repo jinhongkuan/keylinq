@@ -51,7 +51,7 @@ import { withStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 
 import { IconButton } from "@material-ui/core";
-
+import { readURL } from "./utils";
 const WhiteTypography = withStyles({
   root: {
     color: "#FFFFFF",
@@ -60,7 +60,6 @@ const WhiteTypography = withStyles({
 
 const secret = require("./secret.json");
 const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
-const ipfsCore = require("ipfs-core");
 const uint8ArrayConcat = require("uint8arrays/concat");
 const uint8ArrayToString = require("uint8arrays/to-string");
 
@@ -386,7 +385,6 @@ const Deposit = ({
   account,
   keylinkContract,
   lcAddresses,
-  ipfs,
   match,
 }) => {
   const [ipfsHash, setIPFSHash] = useState("");
@@ -453,35 +451,37 @@ const Deposit = ({
     try {
       // const status = await nftStorageClient.check(cid);
       console.log(cid);
-      console.log(ipfs);
 
-      const dirData = [];
-      const detailsData = [];
-      const paymentData = [];
+      // const dirData = [];
+      // const detailsData = [];
+      // const paymentData = [];
 
-      for await (const chunk of ipfs.get(cid)) {
-        dirData.push(chunk);
-      }
+      // for await (const chunk of ipfs.get(cid)) {
+      //   dirData.push(chunk);
+      // }
 
       setOpenBackdrop(true);
+      const gateway = "http://ipfs.io/ipfs/";
+      const details = JSON.parse(readURL(gateway + cid + "/details.json"));
+      const payments = JSON.parse(readURL(gateway + cid + "/payment.json"));
 
-      for (const element of dirData) {
-        if (element.name == "details.json") {
-          for await (const chunk of element.content) {
-            detailsData.push(chunk);
-          }
-        } else if (element.name == "payment.json") {
-          for await (const chunk of element.content) {
-            paymentData.push(chunk);
-          }
-        }
-      }
-      const details = JSON.parse(
-        uint8ArrayToString(uint8ArrayConcat(detailsData))
-      );
-      const payments = JSON.parse(
-        uint8ArrayToString(uint8ArrayConcat(paymentData))
-      );
+      // for (const element of dirData) {
+      //   if (element.name == "details.json") {
+      //     for await (const chunk of element.content) {
+      //       detailsData.push(chunk);
+      //     }
+      //   } else if (element.name == "payment.json") {
+      //     for await (const chunk of element.content) {
+      //       paymentData.push(chunk);
+      //     }
+      //   }
+      // }
+      // const details = JSON.parse(
+      //   uint8ArrayToString(uint8ArrayConcat(detailsData))
+      // );
+      // const payments = JSON.parse(
+      //   uint8ArrayToString(uint8ArrayConcat(paymentData))
+      // );
       setAsset(payments.asset);
       setAmount(payments.amount);
       setRecepient(payments.recepient);
@@ -497,10 +497,8 @@ const Deposit = ({
   };
 
   useEffect(() => {
-    if (ipfs != null) {
-      loadLink(match.params.cid);
-    }
-  }, [ipfs]);
+    loadLink(match.params.cid);
+  }, []);
   return (
     <div class="center body-vertical-span">
       <Dialog
