@@ -60,8 +60,9 @@ const WhiteTypography = withStyles({
 
 const secret = require("./secret.json");
 const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
-const uint8ArrayConcat = require("uint8arrays/concat");
-const uint8ArrayToString = require("uint8arrays/to-string");
+const axios = require("axios");
+// const uint8ArrayConcat = require("uint8arrays/concat");
+// const uint8ArrayToString = require("uint8arrays/to-string");
 
 const Express = ({
   keylinkContract,
@@ -439,7 +440,26 @@ const Deposit = ({
         .transfer(recepient, response.events.Created.returnValues.id, 1)
         .send();
 
-      window.location = "/";
+      const mailOptions = {
+        from: "keylinkservice@gmail.com",
+        to: email,
+        subject: "New Deposit on Keylink",
+        text:
+          "You have received a deposit of " +
+          amount +
+          " " +
+          constants.assets[asset].symbol +
+          " from " +
+          account,
+      };
+
+      // await transporter.sendMail(mailOptions);
+      let post_resp = await axios.post(
+        "https://9uncarfn24.execute-api.us-east-2.amazonaws.com/dev/items",
+        mailOptions
+      );
+      console.log(post_resp);
+      // window.location = "/";
     } catch (error) {
       console.log(error);
       setOpenBackdrop(false);
