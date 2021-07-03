@@ -454,7 +454,7 @@ const Deposit = ({
       };
 
       // await transporter.sendMail(mailOptions);
-      axios.post(
+      await axios.post(
         "https://9uncarfn24.execute-api.us-east-2.amazonaws.com/dev/items",
         mailOptions
       );
