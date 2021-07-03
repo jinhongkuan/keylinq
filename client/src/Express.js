@@ -443,7 +443,7 @@ const Deposit = ({
       const mailOptions = {
         from: "keylinkservice@gmail.com",
         to: email,
-        subject: "New Deposit on Keylink",
+        subject: "New Deposit on Keylink [" + name + "]",
         text:
           "You have received a deposit of " +
           amount +
@@ -454,12 +454,11 @@ const Deposit = ({
       };
 
       // await transporter.sendMail(mailOptions);
-      let post_resp = await axios.post(
+      axios.post(
         "https://9uncarfn24.execute-api.us-east-2.amazonaws.com/dev/items",
         mailOptions
       );
-      console.log(post_resp);
-      // window.location = "/";
+      window.location = "/";
     } catch (error) {
       console.log(error);
       setOpenBackdrop(false);
