@@ -771,6 +771,10 @@ const Create = ({
     }
   };
 
+  useEffect(() => {
+    setAsset(Object.keys(constants.assets)[0]);
+  }, [constants]);
+
   return (
     <div class="center body-vertical-span">
       <FormControl>
@@ -816,11 +820,7 @@ const Create = ({
                   Assets
                 </TableCell>
                 <TableCell>
-                  <Select
-                    native
-                    defaultValue={Object.keys(constants.assets)[0]}
-                    onChange={handleAssetSelection}
-                  >
+                  <Select native onChange={handleAssetSelection} value={asset}>
                     {constants
                       ? Object.keys(constants.assets).map((key, index) => (
                           <option value={key}>
