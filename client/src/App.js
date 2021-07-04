@@ -11,7 +11,8 @@ import { Express, Request, Deposit } from "./Express.js";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { NFTStorage, File } from "nft.storage";
 
-import Logo from "./resources/logo.jpg";
+import Logo from "./resources/logo.png";
+import ErrorLogo from "@material-ui/icons/Error";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import Backdrop from "@material-ui/core/Backdrop";
@@ -38,6 +39,8 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Tooltip from "@material-ui/core/Tooltip";
 import Typography from "@material-ui/core/Typography";
 import Key from "@material-ui/icons/VpnKey";
+import EnhancedEncryptionIcon from "@material-ui/icons/EnhancedEncryption";
+import SwapIcon from "@material-ui/icons/SwapHoriz";
 import Select from "@material-ui/core/Select";
 import TextField from "@material-ui/core/TextField";
 import { createMuiTheme } from "@material-ui/core/styles";
@@ -67,18 +70,11 @@ const mainTheme = createMuiTheme({
 
   palette: {
     primary: {
-      main: "#000000",
-    },
-  },
-});
-
-const contractSiteTheme = createMuiTheme({
-  palette: {
-    primary: {
-      main: "#8bc34a",
+      main: "#ea973e",
+      contrastText: "#fff",
     },
     secondary: {
-      main: "#cddc39",
+      main: "#156abe",
     },
   },
 });
@@ -161,7 +157,7 @@ const styles = (theme) => ({
   },
 
   add_collateral_bar: {
-    background: theme.palette.secondary.main,
+    background: theme.palette.primary.main,
     paddingTop: 8,
     paddingBottom: 8,
   },
@@ -186,6 +182,7 @@ const WhiteTypography = withStyles({
 const App = (props) => {
   const { classes } = props;
   const [page, setPage] = useState(null);
+  const [wrongNetwork, setWrongNetwork] = useState(false);
   const [web3, setWeb3] = useState(null);
   const [constants, setConstants] = useState(null);
   const [account, setAccount] = useState(null);
@@ -208,16 +205,23 @@ const App = (props) => {
     const account = (await web3.eth.getAccounts())[0];
     // Get the keylinkContract instance.
     const networkId = await web3.eth.net.getId();
-    const lc = [CountLiquidationCheck.networks[networkId].address];
+    try {
+      const lc = [CountLiquidationCheck.networks[networkId].address];
 
-    setLCAddresses(lc);
+      setLCAddresses(lc);
 
-    const instance = new web3.eth.Contract(
-      CollaterizeContract.abi,
-      CollaterizeContract.networks[networkId] &&
-        CollaterizeContract.networks[networkId].address,
-      { gasLimit: 1000000, from: account }
-    );
+      var instance;
+
+      instance = new web3.eth.Contract(
+        CollaterizeContract.abi,
+        CollaterizeContract.networks[networkId] &&
+          CollaterizeContract.networks[networkId].address,
+        { gasLimit: 1000000, from: account }
+      );
+    } catch (error) {
+      setWrongNetwork(true);
+      return;
+    }
 
     const allCollaterals = await instance.methods
       .getOwnedCollaterals(account)
@@ -332,6 +336,7 @@ const App = (props) => {
   };
 
   useEffect(() => {
+    document.title = "Keylinq";
     (async () => {
       if (window.ethereum) await connectWeb3();
     })();
@@ -371,86 +376,89 @@ const App = (props) => {
             </Box>
           </Toolbar>
         </AppBar>
+        {wrongNetwork ? (
+          <WrongNetwork />
+        ) : (
+          <Switch>
+            <Route
+              exact
+              path="/"
+              render={() => (
+                <Home
+                  collateralList={collateralList}
+                  account={account}
+                  classes={classes}
+                  keylinkContract={keylinkContract}
+                  web3={web3}
+                  setOpenBackdrop={setOpenBackdrop}
+                  setPage={setPage}
+                />
+              )}
+            />
 
-        <Switch>
-          <Route
-            exact
-            path="/"
-            render={() => (
-              <Home
-                collateralList={collateralList}
-                account={account}
-                classes={classes}
-                keylinkContract={keylinkContract}
-                web3={web3}
-                setOpenBackdrop={setOpenBackdrop}
-                setPage={setPage}
-              />
-            )}
-          />
+            <Route
+              path="/create/"
+              render={() => (
+                <Create
+                  keylinkContract={keylinkContract}
+                  account={account}
+                  web3={web3}
+                  classes={classes}
+                  setOpenBackdrop={setOpenBackdrop}
+                  setPage={setPage}
+                  constants={constants}
+                  lcAddresses={lcAddresses}
+                />
+              )}
+            ></Route>
 
-          <Route
-            path="/create/"
-            render={() => (
-              <Create
-                keylinkContract={keylinkContract}
-                account={account}
-                web3={web3}
-                classes={classes}
-                setOpenBackdrop={setOpenBackdrop}
-                setPage={setPage}
-                constants={constants}
-                lcAddresses={lcAddresses}
-              />
-            )}
-          ></Route>
+            <Route
+              path="/express/"
+              render={() => (
+                <Express
+                  keylinkContract={keylinkContract}
+                  account={account}
+                  web3={web3}
+                  classes={classes}
+                  setOpenBackdrop={setOpenBackdrop}
+                  setPage={setPage}
+                />
+              )}
+            ></Route>
 
-          <Route
-            path="/express/"
-            render={() => (
-              <Express
-                keylinkContract={keylinkContract}
-                account={account}
-                web3={web3}
-                classes={classes}
-                setOpenBackdrop={setOpenBackdrop}
-                setPage={setPage}
-              />
-            )}
-          ></Route>
+            <Route
+              path="/request/"
+              render={() => (
+                <Request
+                  keylinkContract={keylinkContract}
+                  account={account}
+                  web3={web3}
+                  classes={classes}
+                  setOpenBackdrop={setOpenBackdrop}
+                  setPage={setPage}
+                  constants={constants}
+                />
+              )}
+            ></Route>
 
-          <Route
-            path="/request/"
-            render={() => (
-              <Request
-                keylinkContract={keylinkContract}
-                account={account}
-                web3={web3}
-                classes={classes}
-                setOpenBackdrop={setOpenBackdrop}
-                setPage={setPage}
-                constants={constants}
-              />
-            )}
-          ></Route>
-
-          <Route
-            path="/deposit/:cid?"
-            render={({ match }) => (
-              <Deposit
-                keylinkContract={keylinkContract}
-                account={account}
-                web3={web3}
-                classes={classes}
-                constants={constants}
-                setOpenBackdrop={setOpenBackdrop}
-                setPage={setPage}
-                lcAddresses={lcAddresses}
-                match={match}
-              />
-            )}
-          ></Route>
-        </Switch>
+            <Route
+              path="/deposit/:cid?"
+              render={({ match }) => (
+                <Deposit
+                  keylinkContract={keylinkContract}
+                  account={account}
+                  web3={web3}
+                  classes={classes}
+                  constants={constants}
+                  setOpenBackdrop={setOpenBackdrop}
+                  setPage={setPage}
+                  lcAddresses={lcAddresses}
+                  match={match}
+                />
+              )}
+            ></Route>
+          </Switch>
+        )}
       </Router>
     </ThemeProvider>
   );
@@ -474,11 +482,14 @@ const Home = ({
   const [col, setCol] = useState(null);
   const [ind, setInd] = useState(0);
 
-  const handleKeyClick = (collateral, index) => {
-    console.log("clicked");
-    setCol(collateral);
-    setInd(index);
-    setOpen(true);
+  const handleKeyClick = (collateral, index, owned) => {
+    if (owned) {
+      setCol(collateral);
+      setInd(index);
+      setOpen(true);
+    } else {
+      navigator.clipboard.writeText(collateral.accounts[index]);
+    }
   };
 
   const handleClose = async (cont) => {
@@ -574,8 +585,9 @@ const Home = ({
                             <div>
                               <IconButton
                                 className={classes.key}
-                                disabled={addr == account ? false : true}
-                                onClick={() => handleKeyClick(collateral, i)}
+                                onClick={() =>
+                                  handleKeyClick(collateral, i, addr == account)
+                                }
                               >
                                 <Key
                                   color={
@@ -611,6 +623,9 @@ const Home = ({
                 <Grid item>
                   <Link to="/create" style={{ textDecoration: "none" }}>
                     <Button variant="contained" color="primary">
+                      <EnhancedEncryptionIcon
+                        style={{ padding: 5 }}
+                      ></EnhancedEncryptionIcon>
                       Create Vault
                     </Button>
                   </Link>
@@ -618,7 +633,8 @@ const Home = ({
                 <Grid item>
                   <Link to="/express" style={{ textDecoration: "none" }}>
                     <Button variant="contained" color="primary">
-                      Quickstart
+                      <SwapIcon style={{ padding: 5 }}></SwapIcon>
+                      Payments
                     </Button>
                   </Link>
                 </Grid>
@@ -756,7 +772,9 @@ const Create = ({
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Descriptor</TableCell>
+                <TableCell style={{ verticalAlign: "text-top" }}>
+                  Descriptor
+                </TableCell>
                 <TableCell>
                   <FormControl>
                     <TextField
@@ -769,7 +787,9 @@ const Create = ({
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Assets</TableCell>
+                <TableCell style={{ verticalAlign: "text-top" }}>
+                  Assets
+                </TableCell>
                 <TableCell>
                   <Select native onChange={handleAssetSelection}>
                     {constants
@@ -786,7 +806,9 @@ const Create = ({
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Amount</TableCell>
+                <TableCell style={{ verticalAlign: "text-top" }}>
+                  Amount
+                </TableCell>
                 <TableCell>
                   <FormControl>
                     <TextField
@@ -799,7 +821,9 @@ const Create = ({
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Keys</TableCell>
+                <TableCell style={{ verticalAlign: "text-top" }}>
+                  Keys
+                </TableCell>
                 <TableCell>
                   <FormControl>
                     <Select
@@ -829,4 +853,22 @@ const Create = ({
   );
 };
 
+const WrongNetwork = () => {
+  return (
+    <div class="center body-vertical-span">
+      <Grid container justify="center">
+        <Grid item>
+          <ErrorLogo style={{ width: 100, height: 100 }}></ErrorLogo>
+        </Grid>
+        <Box width="100%"></Box>
+        <Grid item justify="center">
+          <Typography variant="h4" align="center">
+            It appears that you are on the wrong network! Please switch to
+            Rinkeby Testnet.
+          </Typography>
+        </Grid>
+      </Grid>
+    </div>
+  );
+};
 export default withStyles(styles)(App);

@@ -89,7 +89,7 @@ const Express = ({
     <div class="center body-vertical-span">
       <div class="center">
         <Grid container spacing={2} justify="center">
-          <Grid container item>
+          <Grid container item justify="center">
             <Link to="/deposit" style={{ textDecoration: "none" }}>
               <Button
                 variant="contained"
@@ -101,7 +101,7 @@ const Express = ({
               </Button>
             </Link>
           </Grid>
-          <Grid container item>
+          <Grid container item justify="center">
             <Grid item>
               <Link to="/request" style={{ textDecoration: "none" }}>
                 <Button
@@ -138,7 +138,7 @@ const Request = ({ classes, constants, setOpenBackdrop, account }) => {
             name: name,
             description: description,
             email: email,
-            service: "Express",
+            service: "Payments",
           }),
         ],
         "details.json"
@@ -236,6 +236,8 @@ const ExpressForm = ({
   setAmount,
   continueAction,
   rOnly,
+  memo,
+  setMemo,
 }) => {
   return (
     <FormControl>
@@ -267,13 +269,14 @@ const ExpressForm = ({
             </TableRow>
 
             <TableRow>
-              <TableCell>Name</TableCell>
+              <TableCell style={{ verticalAlign: "text-top" }}>Name</TableCell>
               <TableCell>
-                <FormControl>
+                <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    variant="outlined"
                     inputProps={{
                       readOnly: rOnly,
                     }}
@@ -283,15 +286,18 @@ const ExpressForm = ({
             </TableRow>
 
             <TableRow>
-              <TableCell>Description</TableCell>
+              <TableCell style={{ verticalAlign: "text-top" }}>
+                Description
+              </TableCell>
               <TableCell>
-                <FormControl>
+                <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
                     value={description}
                     multiline
-                    rows={3}
+                    rows={4}
                     onChange={(e) => setDescription(e.target.value)}
+                    variant="outlined"
                     inputProps={{
                       readOnly: rOnly,
                     }}
@@ -301,13 +307,14 @@ const ExpressForm = ({
             </TableRow>
 
             <TableRow>
-              <TableCell>Email</TableCell>
+              <TableCell style={{ verticalAlign: "text-top" }}>Email</TableCell>
               <TableCell>
-                <FormControl>
+                <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    variant="outlined"
                     inputProps={{
                       readOnly: rOnly,
                     }}
@@ -317,14 +324,17 @@ const ExpressForm = ({
             </TableRow>
 
             <TableRow>
-              <TableCell>Amount</TableCell>
+              <TableCell style={{ verticalAlign: "text-top" }}>
+                Amount
+              </TableCell>
               <TableCell>
-                <FormControl>
+                <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
                     value={amount}
                     className={classes.amount_input}
                     onChange={(e) => parseFloat(setAmount(e.target.value))}
+                    variant="outlined"
                     inputProps={{
                       readOnly: rOnly,
                     }}
@@ -334,7 +344,9 @@ const ExpressForm = ({
             </TableRow>
 
             <TableRow>
-              <TableCell>Assets</TableCell>
+              <TableCell style={{ verticalAlign: "text-top" }}>
+                Assets
+              </TableCell>
               <TableCell>
                 {rOnly ? (
                   <TextField
@@ -343,6 +355,7 @@ const ExpressForm = ({
                     inputProps={{
                       readOnly: rOnly,
                     }}
+                    variant="outlined"
                   ></TextField>
                 ) : (
                   <Select
@@ -365,6 +378,29 @@ const ExpressForm = ({
                 )}
               </TableCell>
             </TableRow>
+
+            {rOnly ? (
+              <TableRow>
+                <TableCell style={{ verticalAlign: "text-top" }}>
+                  Memo
+                </TableCell>
+                <TableCell>
+                  <FormControl style={{ width: "100%" }}>
+                    <TextField
+                      label=""
+                      value={memo}
+                      multiline
+                      rows={3}
+                      placeholder="Your name, requests etc."
+                      variant="outlined"
+                      onChange={(e) => setMemo(e.target.value)}
+                    ></TextField>
+                  </FormControl>
+                </TableCell>
+              </TableRow>
+            ) : (
+              ""
+            )}
           </TableBody>
         </Table>
         <Grid container justify="flex-end">
@@ -395,6 +431,7 @@ const Deposit = ({
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
+  const [memo, setMemo] = useState("");
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
   const confirmationDialog = async () => {
     setOpenBackdrop(true);
@@ -444,13 +481,15 @@ const Deposit = ({
         from: "keylinkservice@gmail.com",
         to: email,
         subject: "New Deposit on Keylink [" + name + "]",
-        text:
+        html:
           "You have received a deposit of " +
           amount +
           " " +
           constants.assets[asset].symbol +
           " from " +
-          account,
+          account +
+          "<br/><br/><b>Memo: </b>" +
+          memo,
       };
 
       // await transporter.sendMail(mailOptions);
@@ -592,6 +631,8 @@ const Deposit = ({
           setAmount={setAmount}
           continueAction={confirmationDialog}
           rOnly={true}
+          memo={memo}
+          setMemo={setMemo}
         />
       )}
     </div>

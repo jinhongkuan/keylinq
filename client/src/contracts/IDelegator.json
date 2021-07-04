@@ -48,7 +48,7 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "//SPDX-License-Identifier: Unlicensed\r\npragma solidity ^0.8.0;\r\n\r\ninterface IDelegator {\r\n    function isDelegator() external pure returns(bool);\r\n    function delegatedTo(uint256 id, uint256 index) external view returns(address);\r\n}",
-  "sourcePath": "C:\\Users\\Kuan\\Documents\\GitHub\\collaterize\\contracts\\IDelegator.sol",
+  "sourcePath": "C:/Users/Kuan/Documents/GitHub/collaterize/contracts/IDelegator.sol",
   "ast": {
     "absolutePath": "/C/Users/Kuan/Documents/GitHub/collaterize/contracts/IDelegator.sol",
     "exportedSymbols": {
@@ -473,7 +473,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-07-02T03:28:01.108Z",
+  "updatedAt": "2021-07-03T23:42:59.817Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
