@@ -39,6 +39,7 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Tooltip from "@material-ui/core/Tooltip";
 import Typography from "@material-ui/core/Typography";
 import Key from "@material-ui/icons/VpnKey";
+import HelpIcon from "@material-ui/icons/Help";
 import EnhancedEncryptionIcon from "@material-ui/icons/EnhancedEncryption";
 import SwapIcon from "@material-ui/icons/SwapHoriz";
 import Select from "@material-ui/core/Select";
@@ -51,7 +52,8 @@ import purple from "@material-ui/core/colors/purple";
 import "./App.css";
 import { IconButton } from "@material-ui/core";
 import { readURL } from "./utils";
-
+import blue from "@material-ui/core/colors/blue";
+import orange from "@material-ui/core/colors/orange";
 const secret = require("./secret.json");
 const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
 // const uint8ArrayConcat = require("uint8arrays/concat");
@@ -70,11 +72,12 @@ const mainTheme = createMuiTheme({
 
   palette: {
     primary: {
-      main: "#ea973e",
+      main: orange[400],
       contrastText: "#fff",
     },
     secondary: {
-      main: "#156abe",
+      main: blue[800],
+      contrastText: "#fff",
     },
   },
 });
@@ -157,13 +160,13 @@ const styles = (theme) => ({
   },
 
   add_collateral_bar: {
-    background: theme.palette.primary.main,
+    background: mainTheme.palette.secondary.main,
     paddingTop: 8,
     paddingBottom: 8,
   },
 
   create_request_bar: {
-    background: theme.palette.primary.main,
+    background: mainTheme.palette.secondary.main,
     paddingTop: 8,
     paddingBottom: 8,
   },
@@ -204,7 +207,32 @@ const App = (props) => {
     // Use web3 to get the user's accounts.
     const account = (await web3.eth.getAccounts())[0];
     // Get the keylinkContract instance.
+    const nativeTokens = {
+      1: "ETH",
+      3: "ETH",
+      137: "MATIC",
+      80001: "MATIC",
+    };
+
+    const nativeTokenNames = {
+      1: "Ether",
+      3: "Ether",
+      137: "MATIC Token",
+      80001: "MATIC Token",
+    };
+
     const networkId = await web3.eth.net.getId();
+
+    let nativeToken;
+    let nativeTokenName;
+    if (networkId in nativeTokens) {
+      nativeToken = nativeTokens[networkId];
+      nativeTokenName = nativeTokenNames[networkId];
+    } else {
+      nativeToken = nativeTokens[1];
+      nativeTokenName = nativeTokenNames[1];
+    }
+
     try {
       const lc = [CountLiquidationCheck.networks[networkId].address];
 
@@ -238,7 +266,7 @@ const App = (props) => {
       let decimals;
 
       if (parseInt(collateral.token) == 0) {
-        symbol = "ETH";
+        symbol = nativeToken;
         decimals = 18;
       } else {
         var erc20MetadataContract = new web3.eth.Contract(
@@ -295,14 +323,13 @@ const App = (props) => {
 
     const tokenList = [TestERC20.networks[networkId].address];
     const _constants = {
-      assets: {
-        Ether: {
-          address: "NATIVE",
-          decimals: 18,
-          balance: await web3.eth.getBalance(account),
-          symbol: "ETH",
-        },
-      },
+      assets: {},
+    };
+    _constants["assets"][nativeTokenName] = {
+      address: "NATIVE",
+      decimals: 18,
+      balance: await web3.eth.getBalance(account),
+      symbol: nativeToken,
     };
     for (let i = 0; i < tokenList.length; i++) {
       const addr = tokenList[i];
@@ -365,6 +392,15 @@ const App = (props) => {
             </Link>
 
             <Box className={classes.tool_bar}>
+              <IconButton
+                onClick={() => {
+                  window.open(
+                    "https://www.notion.so/Keylinq-42a1e15b92aa458d9cea776e9db97ae7"
+                  );
+                }}
+              >
+                <HelpIcon></HelpIcon>
+              </IconButton>
               <Button
                 variant="contained"
                 color={account ? "disabled" : "secondary"}
@@ -622,7 +658,7 @@ const Home = ({
               <Grid container spacing={2} justify="center">
                 <Grid item>
                   <Link to="/create" style={{ textDecoration: "none" }}>
-                    <Button variant="contained" color="primary">
+                    <Button variant="contained" color="secondary">
                       <EnhancedEncryptionIcon
                         style={{ padding: 5 }}
                       ></EnhancedEncryptionIcon>
@@ -632,7 +668,7 @@ const Home = ({
                 </Grid>
                 <Grid item>
                   <Link to="/express" style={{ textDecoration: "none" }}>
-                    <Button variant="contained" color="primary">
+                    <Button variant="contained" color="secondary">
                       <SwapIcon style={{ padding: 5 }}></SwapIcon>
                       Payments
                     </Button>
@@ -661,18 +697,11 @@ const Create = ({
   lcAddresses,
 }) => {
   if (!web3) window.location = "/";
-  const [asset, setAsset] = useState("ETH");
+  const [asset, setAsset] = useState("");
   const [name, setName] = useState("");
   const [accounts, setAccounts] = useState(2);
 
   var [amount, setAmount] = useState(0);
-
-  useEffect(() => {
-    (async () => {
-      setPage("Create");
-      const networkId = await web3.eth.net.getId();
-    })();
-  }, []);
 
   const createCollateral = async () => {
     setOpenBackdrop(true);
@@ -762,11 +791,7 @@ const Create = ({
                       <Box
                         className={classes.action_dialog}
                         alignItems="flex-end"
-                      >
-                        <WhiteTypography variant="caption">
-                          Powered by <b>Keylink</b>
-                        </WhiteTypography>
-                      </Box>
+                      ></Box>
                     </div>
                   </div>
                 </TableCell>
@@ -791,7 +816,11 @@ const Create = ({
                   Assets
                 </TableCell>
                 <TableCell>
-                  <Select native onChange={handleAssetSelection}>
+                  <Select
+                    native
+                    defaultValue={Object.keys(constants.assets)[0]}
+                    onChange={handleAssetSelection}
+                  >
                     {constants
                       ? Object.keys(constants.assets).map((key, index) => (
                           <option value={key}>

@@ -93,7 +93,7 @@ const Express = ({
             <Link to="/deposit" style={{ textDecoration: "none" }}>
               <Button
                 variant="contained"
-                color="primary"
+                color="secondary"
                 style={{ width: 150 }}
               >
                 <PaymentIcon style={{ padding: 5 }}></PaymentIcon>
@@ -106,7 +106,7 @@ const Express = ({
               <Link to="/request" style={{ textDecoration: "none" }}>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="secondary"
                   style={{ width: 150 }}
                 >
                   <ListAlt style={{ padding: 5 }}></ListAlt>
@@ -260,7 +260,7 @@ const ExpressForm = ({
                       alignItems="flex-end"
                     >
                       <WhiteTypography variant="caption">
-                        Powered by <b>Keylink</b>
+                        Powered by <b>Keylinq</b>
                       </WhiteTypography>
                     </Box>
                   </div>

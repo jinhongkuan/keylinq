@@ -11,7 +11,7 @@ hexToBytes = function (hex) {
 
 module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(Keylink);
-  await deployer.deploy(KeylinkDelegator, (await Keylink.deployed()).address);
+  // await deployer.deploy(KeylinkDelegator, (await Keylink.deployed()).address);
   await deployer.deploy(CountLiquidationCheck);
   await deployer.deploy(
     ERC20,

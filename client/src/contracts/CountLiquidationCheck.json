@@ -7957,12 +7957,12 @@
     "80001": {
       "events": {},
       "links": {},
-      "address": "0xB25ed99D8Ff2E81431dFA6Bc1f60fF70155958B9",
-      "transactionHash": "0xdc2005a2f6c9c72f401f49a2e0d5832801222b2cb8d6180b8115c46f3dccf059"
+      "address": "0x62bC34a11cA2C71B049CA6bB62a9eeFbe8AA4fa2",
+      "transactionHash": "0xb2a54b70a2d5fd3319560a9165247fc196ad753330fa1855708fd8cc482fad88"
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-07-03T23:43:05.576Z",
+  "updatedAt": "2021-07-04T17:34:23.081Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

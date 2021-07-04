@@ -42950,10 +42950,80 @@
       "links": {},
       "address": "0xA8176F67141D0923564bB4d5ce737Cb68F009A7F",
       "transactionHash": "0x164965b6d10f7bc77c37765ad467ce0889451eeefc1049c17247a2fb56441072"
+    },
+    "80001": {
+      "events": {
+        "0x0ce3610e89a4bb9ec9359763f99110ed52a4abaea0b62028a1637e242ca2768b": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            }
+          ],
+          "name": "Created",
+          "type": "event"
+        },
+        "0xa5ee7a2b0254fce91deed604506790ed7fa072d0b14cba4859c3bc8955b9caac": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "by",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            }
+          ],
+          "name": "Liquidated",
+          "type": "event"
+        },
+        "0x50138f9bacff3d0b4502034fe2899d632661b0d55e5cf33a4419d39172ec69bb": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            }
+          ],
+          "name": "TransferKey",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x328cb2FE72829692853a294dcd1BC77455b9e6AC",
+      "transactionHash": "0x0865c77f386d515a06d45cc73ef1381915035da0dd1e70e54ef25786e9193acb"
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-07-03T23:43:05.510Z",
+  "updatedAt": "2021-07-04T17:34:23.052Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
