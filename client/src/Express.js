@@ -122,7 +122,7 @@ const Express = ({
 };
 
 const Request = ({ classes, constants, setOpenBackdrop, account }) => {
-  const [asset, setAsset] = useState("Ether");
+  const [asset, setAsset] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
@@ -239,6 +239,9 @@ const ExpressForm = ({
   memo,
   setMemo,
 }) => {
+  useEffect(() => {
+    if (constants) setAsset(Object.keys(constants.assets)[0]);
+  }, constants);
   return (
     <FormControl>
       <TableContainer component={Paper}>
@@ -425,7 +428,7 @@ const Deposit = ({
   match,
 }) => {
   const [ipfsHash, setIPFSHash] = useState("");
-  const [asset, setAsset] = useState("Ether");
+  const [asset, setAsset] = useState("");
   const [name, setName] = useState("");
   const [recepient, setRecepient] = useState("");
   const [email, setEmail] = useState("");

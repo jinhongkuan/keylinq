@@ -157,6 +157,9 @@ const styles = (theme) => ({
 
   connect_wallet: {
     width: 150,
+    height: 40,
+    marginTop: 5,
+    marginBottom: 5
   },
 
   add_collateral_bar: {
