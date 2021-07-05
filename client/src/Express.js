@@ -45,6 +45,8 @@ import Select from "@material-ui/core/Select";
 import ListAlt from "@material-ui/icons/ListAlt";
 import PaymentIcon from "@material-ui/icons/Payment";
 import TextField from "@material-ui/core/TextField";
+import InputAdornment from "@material-ui/core/InputAdornment";
+
 import { createMuiTheme } from "@material-ui/core/styles";
 import { ThemeProvider } from "@material-ui/styles";
 import { withStyles } from "@material-ui/core/styles";
@@ -126,6 +128,7 @@ const Request = ({ classes, constants, setOpenBackdrop, account }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
+  const [expiration, setExpiration] = useState(0);
   const [amount, setAmount] = useState(0);
   const [ipfsLink, setIPFSLink] = useState("");
   const [openShareDialog, setOpenShareDialog] = useState(false);
@@ -149,6 +152,7 @@ const Request = ({ classes, constants, setOpenBackdrop, account }) => {
             amount: amount,
             asset: asset,
             recepient: account,
+            expiration: expiration,
           }),
         ],
         "payment.json"
@@ -206,6 +210,7 @@ const Request = ({ classes, constants, setOpenBackdrop, account }) => {
           email={email}
           description={description}
           constants={constants}
+          expiration={expiration}
           amount={amount}
           setAsset={setAsset}
           setName={setName}
@@ -213,6 +218,7 @@ const Request = ({ classes, constants, setOpenBackdrop, account }) => {
           setDescription={setDescription}
           classes={classes}
           setAmount={setAmount}
+          setExpiration={setExpiration}
           continueAction={publishRequest}
           rOnly={false}
         />
@@ -228,10 +234,12 @@ const ExpressForm = ({
   description,
   constants,
   amount,
+  expiration,
   setAsset,
   setName,
   setEmail,
   setDescription,
+  setExpiration,
   classes,
   setAmount,
   continueAction,
@@ -277,6 +285,7 @@ const ExpressForm = ({
                 <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
+                    size="small"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     variant="outlined"
@@ -296,9 +305,10 @@ const ExpressForm = ({
                 <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
+                    size="small"
                     value={description}
                     multiline
-                    rows={4}
+                    rows={3}
                     onChange={(e) => setDescription(e.target.value)}
                     variant="outlined"
                     inputProps={{
@@ -315,6 +325,7 @@ const ExpressForm = ({
                 <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
+                    size="small"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     variant="outlined"
@@ -334,9 +345,31 @@ const ExpressForm = ({
                 <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
+                    size="small"
                     value={amount}
                     className={classes.amount_input}
                     onChange={(e) => parseFloat(setAmount(e.target.value))}
+                    variant="outlined"
+                    inputProps={{
+                      readOnly: rOnly,
+                    }}
+                  ></TextField>
+                </FormControl>
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell style={{ verticalAlign: "text-top" }}>
+                Expiration<br></br>(Days)
+              </TableCell>
+              <TableCell>
+                <FormControl style={{ width: "100%" }}>
+                  <TextField
+                    label=""
+                    size="small"
+                    value={0 ? "No Expiration" : expiration}
+                    className={classes.amount_input}
+                    onChange={(e) => parseFloat(setExpiration(e.target.value))}
                     variant="outlined"
                     inputProps={{
                       readOnly: rOnly,
@@ -354,6 +387,7 @@ const ExpressForm = ({
                 {rOnly ? (
                   <TextField
                     label=""
+                    size="small"
                     value={asset}
                     inputProps={{
                       readOnly: rOnly,
@@ -391,9 +425,10 @@ const ExpressForm = ({
                   <FormControl style={{ width: "100%" }}>
                     <TextField
                       label=""
+                      size="small"
                       value={memo}
                       multiline
-                      rows={3}
+                      rows={2}
                       placeholder="Your name, requests etc."
                       variant="outlined"
                       onChange={(e) => setMemo(e.target.value)}
@@ -431,6 +466,7 @@ const Deposit = ({
   const [asset, setAsset] = useState("");
   const [name, setName] = useState("");
   const [recepient, setRecepient] = useState("");
+  const [expiration, setExpiration] = useState(0);
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
@@ -546,6 +582,7 @@ const Deposit = ({
       setAsset(payments.asset);
       setAmount(payments.amount);
       setRecepient(payments.recepient);
+      setExpiration(payments.expiration);
       setName(details.name);
       setDescription(details.description);
       setEmail(details.email);
@@ -624,11 +661,13 @@ const Deposit = ({
           name={name}
           email={email}
           description={description}
+          expiration={expiration}
           constants={constants}
           amount={amount}
           setAsset={setAsset}
           setName={setName}
           setEmail={setEmail}
+          setExpiration={setExpiration}
           setDescription={setDescription}
           classes={classes}
           setAmount={setAmount}
