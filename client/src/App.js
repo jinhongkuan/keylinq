@@ -159,7 +159,7 @@ const styles = (theme) => ({
     width: 150,
     height: 40,
     marginTop: 5,
-    marginBottom: 5
+    marginBottom: 5,
   },
 
   add_collateral_bar: {
@@ -313,15 +313,17 @@ const App = (props) => {
         name = collateral.uri;
       }
 
-      collaterals.push({
-        id: allCollaterals[i],
-        amount: parseFloat(collateral.amount),
-        symbol: symbol,
-        decimals: parseFloat(decimals),
-        name: name,
-        accounts: collateral.accounts,
-        liquidation: liquidateAs,
-      });
+      if (parseFloat(collateral.amount) > 0) {
+        collaterals.push({
+          id: allCollaterals[i],
+          amount: parseFloat(collateral.amount),
+          symbol: symbol,
+          decimals: parseFloat(decimals),
+          name: name,
+          accounts: collateral.accounts,
+          liquidation: liquidateAs,
+        });
+      }
     }
 
     const tokenList = [TestERC20.networks[networkId].address];
