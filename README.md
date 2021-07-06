@@ -1,5 +1,5 @@
 # Keylinq
-Keylinq is a blockchain solution utilizing smart contracts to improve contract payments and deposits. 
+Keylinq is a DeFi solution utilizing smart contracts to improve contract payments and deposits. 
 
 DApp is live on Mumbai and Rinkeby testnet, accessible through https://www.keylinq.com/. Deployment on mainnet will be available soon. 
 
