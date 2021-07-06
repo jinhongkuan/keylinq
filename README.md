@@ -15,7 +15,7 @@ This promotes a more equitable relationship between buyer and contractor:
 - Since buyer cannot retrieve the payment without the contractor's consent in returning the first key, buyers no longer have the incentive to withhold payment
 - Since contractor cannot retrieve the payment until the buyer's consent in giving the second key, they are incentivized to deliver product/service in a timely manner.
 
-We plan to introduce more customization around key ownership to accommodate different contract needs. Our goal is to become the one-stop shop for decentralized contractual payments, powering commission work, housing reservation, item rental and more.
+We plan to introduce more customization around key ownership to accommodate different contract needs, as well as experiment with decentralized arbitration through anonymous jury. Our goal is to become the one-stop shop for contractual payments, powering commission work, housing reservation, item rental and more.
 
 # Roadmap
 1. Implement expiring keys and voting mechanisms
