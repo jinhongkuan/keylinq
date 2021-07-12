@@ -15,7 +15,15 @@
       "function": {
         "postEmail": {
           "deploymentBucketName": "amplify-server-dev-201150-deployment",
-          "s3Key": "amplify-builds/postEmail-7367576f655031744d50-build.zip"
+          "s3Key": "amplify-builds/postEmail-47745345676d57314463-build.zip"
+        },
+        "env": {
+          "deploymentBucketName": "amplify-server-dev-201150-deployment",
+          "s3Key": "amplify-builds/env-416254654d324b484137-build.zip"
+        },
+        "environment": {
+          "deploymentBucketName": "amplify-server-dev-201150-deployment",
+          "s3Key": "amplify-builds/environment-57466d4a6851724e5a35-build.zip"
         }
       }
     }

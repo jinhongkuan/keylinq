@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Component } from "react";
-import CollaterizeContract from "./contracts/Collaterize.json";
+import KeylinkContract from "./contracts/Keylink.json";
 import ILiquidationCheck from "./contracts/ILiquidationCheck.json";
 import CountLiquidationCheck from "./contracts/CountLiquidationCheck.json";
 
@@ -12,6 +12,12 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { NFTStorage, File } from "nft.storage";
 
 import Logo from "./resources/logo.png";
+import LandingPageArt1 from "./resources/landing_page_1.png";
+import LandingPageArt2 from "./resources/landing_page_2.jpg";
+import LandingPageArt3 from "./resources/landing_page_3.jpg";
+import LandingPageArt4a from "./resources/landing_page_4a.png";
+import LandingPageArt4b from "./resources/landing_page_4b.png";
+import ChainlinkLogo from "./resources/chainlink_logo.svg";
 import ErrorLogo from "@material-ui/icons/Error";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
@@ -28,12 +34,17 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Paper from "@material-ui/core/Paper";
+import MenuItem from "@material-ui/core/MenuItem";
+import MenuList from "@material-ui/core/MenuList";
+import FadeIn from "react-fade-in";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Tooltip from "@material-ui/core/Tooltip";
@@ -54,20 +65,17 @@ import { IconButton } from "@material-ui/core";
 import { readURL } from "./utils";
 import blue from "@material-ui/core/colors/blue";
 import orange from "@material-ui/core/colors/orange";
+import VpnKey from "@material-ui/icons/VpnKey";
 const secret = require("./secret.json");
 const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
+const axios = require("axios");
+const server_url = secret.server_url;
 // const uint8ArrayConcat = require("uint8arrays/concat");
 // const uint8ArrayToString = require("uint8arrays/to-string");
 
 const mainTheme = createMuiTheme({
   typography: {
-    fontFamily: [
-      "Nunito",
-      "Roboto",
-      '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-    ].join(","),
+    fontFamily: ["Roboto", '"Helvetica Neue"', "Arial", "sans-serif"].join(","),
   },
 
   palette: {
@@ -185,6 +193,15 @@ const WhiteTypography = withStyles({
   },
 })(Typography);
 
+const LandingPageTooltip = withStyles({
+  tooltip: {
+    color: "black",
+    backgroundColor: "white",
+    border: "1px  solid black",
+    fontSize: 15,
+  },
+})(Tooltip);
+
 const App = (props) => {
   const { classes } = props;
   const [page, setPage] = useState(null);
@@ -210,43 +227,52 @@ const App = (props) => {
     // Use web3 to get the user's accounts.
     const account = (await web3.eth.getAccounts())[0];
     // Get the keylinkContract instance.
-    const nativeTokens = {
-      1: "ETH",
-      3: "ETH",
-      137: "MATIC",
-      80001: "MATIC",
-    };
-
-    const nativeTokenNames = {
-      1: "Ether",
-      3: "Ether",
-      137: "MATIC Token",
-      80001: "MATIC Token",
-    };
 
     const networkId = await web3.eth.net.getId();
 
-    let nativeToken;
-    let nativeTokenName;
-    if (networkId in nativeTokens) {
-      nativeToken = nativeTokens[networkId];
-      nativeTokenName = nativeTokenNames[networkId];
-    } else {
-      nativeToken = nativeTokens[1];
-      nativeTokenName = nativeTokenNames[1];
+    let constantsRequest = (await axios.get(`${server_url}/environment`)).data;
+    const tokenList = constantsRequest.tokenAddresses[networkId];
+    const nativeToken = constantsRequest.nativeTokens[networkId];
+    const lc = constantsRequest.lcAddresses;
+
+    setLCAddresses(lc);
+
+    const _constants = {
+      assets: {},
+    };
+    _constants["assets"][nativeToken.name] = {
+      address: "NATIVE",
+      decimals: nativeToken.decimals,
+      balance: await web3.eth.getBalance(account),
+      symbol: nativeToken.symbol,
+      icon: nativeToken.icon,
+    };
+
+    for (let i = 0; i < tokenList.length; i++) {
+      const addr = tokenList[i].address;
+      const name = tokenList[i].name;
+      const symbol = tokenList[i].symbol;
+      const decimals = tokenList[i].decimals;
+      const icon = tokenList[i].icon;
+      let erc20contract = new web3.eth.Contract(IERC20.abi, addr);
+      let balance = await erc20contract.methods.balanceOf(account).call();
+
+      _constants.assets[name] = {
+        address: addr,
+        decimals: decimals,
+        balance: balance,
+        symbol: symbol,
+        icon: icon,
+      };
     }
 
     try {
-      const lc = [CountLiquidationCheck.networks[networkId].address];
-
-      setLCAddresses(lc);
-
       var instance;
-
+      console.log(KeylinkContract.networks[networkId]);
       instance = new web3.eth.Contract(
-        CollaterizeContract.abi,
-        CollaterizeContract.networks[networkId] &&
-          CollaterizeContract.networks[networkId].address,
+        KeylinkContract.abi,
+        KeylinkContract.networks[networkId] &&
+          KeylinkContract.networks[networkId].address,
         { gasLimit: 1000000, from: account }
       );
     } catch (error) {
@@ -326,38 +352,6 @@ const App = (props) => {
       }
     }
 
-    const tokenList = [TestERC20.networks[networkId].address];
-    const _constants = {
-      assets: {},
-    };
-    _constants["assets"][nativeTokenName] = {
-      address: "NATIVE",
-      decimals: 18,
-      balance: await web3.eth.getBalance(account),
-      symbol: nativeToken,
-    };
-    for (let i = 0; i < tokenList.length; i++) {
-      const addr = tokenList[i];
-      let erc20metadatacontract = new web3.eth.Contract(
-        IERC20Metadata.abi,
-        addr,
-        { from: account, gasLimit: 60000 }
-      );
-      let erc20contract = new web3.eth.Contract(IERC20.abi, addr);
-      console.log(erc20metadatacontract.methods);
-      let name = await erc20metadatacontract.methods.name().call();
-      let symbol = await erc20metadatacontract.methods.symbol().call();
-      let decimals = await erc20metadatacontract.methods.decimals().call();
-      let balance = await erc20contract.methods.balanceOf(account).call();
-
-      _constants.assets[name] = {
-        address: addr,
-        decimals: decimals,
-        balance: balance,
-        symbol: symbol,
-      };
-    }
-
     setWeb3(web3);
     setConstants(_constants);
     setAccount(account);
@@ -425,7 +419,7 @@ const App = (props) => {
               exact
               path="/"
               render={() => (
-                <Home
+                <MainApp
                   collateralList={collateralList}
                   account={account}
                   classes={classes}
@@ -436,6 +430,8 @@ const App = (props) => {
                 />
               )}
             />
+
+            <Route path="/info" render={() => <Info classes={classes} />} />
 
             <Route
               path="/create/"
@@ -509,7 +505,7 @@ App.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-const Home = ({
+const MainApp = ({
   collateralList,
   account,
   classes,
@@ -813,6 +809,8 @@ const Create = ({
                   <FormControl>
                     <TextField
                       label=""
+                      variant="outlined"
+                      size="small"
                       onChange={(e) => {
                         setName(e.target.value);
                       }}
@@ -825,15 +823,27 @@ const Create = ({
                   Assets
                 </TableCell>
                 <TableCell>
-                  <Select native onChange={handleAssetSelection} value={asset}>
+                  <Select
+                    onChange={handleAssetSelection}
+                    variant="outlined"
+                    size="small"
+                    value={asset}
+                  >
                     {constants
                       ? Object.keys(constants.assets).map((key, index) => (
-                          <option value={key}>
-                            {key} (
-                            {constants.assets[key].balance /
-                              Math.pow(10, constants.assets[key].decimals)}{" "}
-                            {constants.assets[key].symbol})
-                          </option>
+                          <MenuItem value={key}>
+                            <ListItemIcon>
+                              <img src={constants.assets[key].icon}></img>
+                            </ListItemIcon>
+                            <ListItemText>
+                              {key} (
+                              {(
+                                constants.assets[key].balance /
+                                Math.pow(10, constants.assets[key].decimals)
+                              ).toPrecision(5)}{" "}
+                              {constants.assets[key].symbol})
+                            </ListItemText>
+                          </MenuItem>
                         ))
                       : ""}
                   </Select>
@@ -848,6 +858,8 @@ const Create = ({
                     <TextField
                       label=""
                       value={amount}
+                      variant="outlined"
+                      size="small"
                       className={classes.amount_input}
                       onChange={(e) => parseFloat(setAmount(e.target.value))}
                     ></TextField>
@@ -864,6 +876,8 @@ const Create = ({
                       onChange={(e) => {
                         setAccounts(e.target.value);
                       }}
+                      variant="outlined"
+                      size="small"
                       value={accounts}
                     >
                       {[...Array(4).keys()].map((val) => (
@@ -902,6 +916,150 @@ const WrongNetwork = () => {
           </Typography>
         </Grid>
       </Grid>
+    </div>
+  );
+};
+
+const Info = ({ classes }) => {
+  return (
+    <div class="center" style={{ marginTop: "8vh", fontFamily: "Roboto" }}>
+      <FadeIn>
+        <div class="center">
+          <h1 style={{ lineHeight: 0.5, fontSize: 40, marginBottom: 15 }}>
+            Keylinq
+          </h1>
+          <div class="break"></div>
+          <h1 style={{ lineHeight: 0.5, fontSize: 25 }}>
+            Your One-stop Shop for Smart Contracts 🤝
+          </h1>
+        </div>
+        <div class="center">
+          <h3 style={{ color: "gray", marginTop: 50 }}>How Does it Work?</h3>
+          <div class="break"></div>
+          <div style={{ width: "35vw", textAlign: "center", lineHeight: 1.5 }}>
+            <p>
+              To simplify contract payments, we create (free!){" "}
+              <b>virtual vaults</b> for you on the blockchain.
+            </p>
+            <img
+              src={LandingPageArt1}
+              style={{ width: 150, height: 150 }}
+            ></img>
+            <p></p>
+            <p>
+              Virtual vaults store cryptocurrencies
+              <LandingPageTooltip title="Through our integration with fiat on-ramp providers, you can now purchase crypto on-the-go with credit/debit card or wire transfer without leaving the site.">
+                <span>
+                  {" "}
+                  (<u style={{ color: "blue" }}>do not own any?</u>)
+                </span>
+              </LandingPageTooltip>
+              , which can be unlocked with <b>keys</b>. When you first open a
+              vault, you gain access to a set of non-duplicable keys. You can
+              then <b>transfer</b> these keys to other users or smart contracts,
+              depending on your use case.
+            </p>
+
+            <img
+              src={LandingPageArt2}
+              style={{ width: 200, height: 200 }}
+            ></img>
+            <p>
+              Finally, funds in vaults can be <b>liquidated</b> based on the
+              vault's liquidation rule. For instance, the liquidator may be
+              required to own
+              <b> any key</b>, <b>all keys</b>, or <b>specific keys</b>.
+            </p>
+            <img
+              src={LandingPageArt3}
+              style={{ width: 150, height: 150 }}
+            ></img>
+          </div>
+        </div>
+        <div class="center">
+          <h3 style={{ color: "gray", marginTop: 50 }}>Use Cases</h3>
+          <div class="break"></div>
+          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+            <p>
+              <b>Commission/contract work</b>
+            </p>
+            <img
+              src={LandingPageArt4a}
+              style={{ width: 100, height: 100 }}
+            ></img>
+            <p style={{ textAlign: "justify" }}>
+              Buyer commissions work from contract worker. Contract worker sends
+              a Keylinq request for buyer to open an <b>all keys</b> vault with
+              required amount. First key is automatically sent to worker, while
+              second key is sent by buyer upon work completion.
+            </p>
+          </div>
+          <div style={{ width: "10vw" }}></div>
+          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+            <p>
+              <b>Safe money transfer</b>
+            </p>
+            <img
+              src={LandingPageArt4b}
+              style={{ width: 125, height: 100 }}
+            ></img>
+            <p style={{ textAlign: "justify" }}>
+              Ever worried that you will send your crypto to the wrong address?
+              Using our SafeTransfer feature, you can instead transfer to an{" "}
+              <b>any key</b> vault, and hand one key over to your recepient.
+              Both sides can unlock with a single key.
+            </p>
+          </div>
+        </div>
+        <div class="center">
+          <h3 style={{ color: "gray", marginTop: 50 }}>Roadmap</h3>
+
+          <div class="break"></div>
+          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+            <div class="center">
+              <span>
+                <b>Chainlink integration</b>
+              </span>
+              <img
+                src={ChainlinkLogo}
+                style={{ width: 25, height: 29, marginLeft: 10 }}
+              ></img>
+            </div>
+            <p style={{ textAlign: "justify" }}>
+              We will integrate with Chainlink to allow for oracle-based
+              automatic key transfer. As a user, you can transfer a key to the
+              Keylinq Oracle Delegator with a specified third-party data
+              endpoint. The Delegator will then delegate the key according to
+              specified conditions, enabling conditional payments (e.g. upon
+              task completion or package delivery).
+            </p>
+          </div>
+          <div class="break"></div>
+          <div style={{ textAlign: "center", lineHeight: 1.5 }}>
+            <b>Availability status</b>
+            <Grid container>
+              <Grid item>
+                <Paper
+                  style={{ backgroundColor: "yellow", margin: 20, padding: 4 }}
+                >
+                  BSC: Testnet
+                </Paper>
+              </Grid>
+              <Grid item>
+                <Paper style={{ backgroundColor: "yellow", margin: 20, padding: 4  }}>
+                  Ethereum: Rinkeby testnet
+                </Paper>
+              </Grid>
+              <Grid item>
+                <Paper style={{ backgroundColor: "yellow", margin: 20, padding: 4  }}>
+                  Polygon: Testnet
+                </Paper>
+              </Grid>
+            </Grid>
+            <div style={{ height: 100 }}></div>
+          </div>
+        </div>
+      </FadeIn>
     </div>
   );
 };

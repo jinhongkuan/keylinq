@@ -11,54 +11,23 @@ hexToBytes = function (hex) {
 
 module.exports = async function (deployer, network, accounts) {
   await deployer.deploy(Keylink);
-  // await deployer.deploy(KeylinkDelegator, (await Keylink.deployed()).address);
   await deployer.deploy(CountLiquidationCheck);
-  await deployer.deploy(
-    ERC20,
-    "TestERC20",
-    "TERC",
-    new web3.utils.BN("100000000000000000000")
-  );
 
-  let countContract = await CountLiquidationCheck.deployed();
-  countContract = new web3.eth.Contract(
-    countContract.abi,
-    countContract.address,
-    {
-      gasLimit: 1000000,
-    }
-  );
+  // await deployer.deploy(KeylinkDelegator, (await Keylink.deployed()).address);
 
-  let keylinkContract = await Keylink.deployed();
-  keylinkContract = new web3.eth.Contract(
-    keylinkContract.abi,
-    keylinkContract.address,
-    { gasLimit: 1000000 }
-  );
-
-  // let ERC20Contract = await ERC20.deployed();
-  // ERC20Contract = new web3.eth.Contract(
-  //   ERC20Contract.abi,
-  //   ERC20Contract.address,
-  //   { gasLimit: 1000000 }
+  // let countContract = await CountLiquidationCheck.deployed();
+  // countContract = new web3.eth.Contract(
+  //   countContract.abi,
+  //   countContract.address,
+  //   {
+  //     gasLimit: 1000000,
+  //   }
   // );
 
-  // await ERC20Contract.methods
-  //   .approve(keylinkContract.options.address, 1000)
-  //   .send({ from: accounts[0] });
-
-  // let response = await collaterizeContract.methods
-  //   .createCollateralERC20(
-  //     ERC20Contract.options.address,
-  //     1000,
-  //     2,
-  //     "Commissioned sculpture",
-  //     countContract.options.address,
-  //     2
-  //   )
-  //   .send({ from: accounts[0] });
-
-  // let id = response.events.Created.returnValues.id;
-
-  // await collaterizeContract.methods.transfer(accounts[1], id, 1);
+  // let keylinkContract = await Keylink.deployed();
+  // keylinkContract = new web3.eth.Contract(
+  //   keylinkContract.abi,
+  //   keylinkContract.address,
+  //   { gasLimit: 1000000 }
+  // );
 };

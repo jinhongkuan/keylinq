@@ -1,35 +1,74 @@
 {
-  "paths": [
-    {
-      "name": "/items",
-      "lambdaFunction": "postEmail",
-      "privacy": {
-        "open": true
-      },
-      "policyResourceName": "/items"
-    }
-  ],
-  "resourceName": "myapi",
-  "apiName": "myapi",
-  "functionArns": [
-    {
-      "lambdaFunction": "postEmail"
-    }
-  ],
-  "privacy": {
-    "auth": 0,
-    "unauth": 0,
-    "authRoleName": "amplify-server-dev-201150-authRole",
-    "unAuthRoleName": "amplify-server-dev-201150-unauthRole"
-  },
-  "dependsOn": [
-    {
-      "category": "function",
-      "resourceName": "postEmail",
-      "attributes": [
-        "Name",
-        "Arn"
-      ]
-    }
-  ]
+    "paths": [
+        {
+            "name": "/items",
+            "lambdaFunction": "postEmail",
+            "privacy": {
+                "open": true
+            },
+            "policyResourceName": "/items"
+        },
+        {
+            "name": "/env",
+            "lambdaFunction": "env",
+            "privacy": {
+                "open": true
+            },
+            "policyResourceName": "/env"
+        },
+        {
+            "name": "/environment",
+            "lambdaFunction": "environment",
+            "privacy": {
+                "open": true
+            },
+            "policyResourceName": "/environment"
+        }
+    ],
+    "resourceName": "myapi",
+    "apiName": "myapi",
+    "functionArns": [
+        {
+            "lambdaFunction": "postEmail"
+        },
+        {
+            "lambdaFunction": "env"
+        },
+        {
+            "lambdaFunction": "environment"
+        }
+    ],
+    "privacy": {
+        "auth": 0,
+        "unauth": 0,
+        "authRoleName": "amplify-server-dev-201150-authRole",
+        "unAuthRoleName": "amplify-server-dev-201150-unauthRole"
+    },
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "postEmail",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "env",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        },
+        {
+            "category": "function",
+            "resourceName": "environment",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        }
+    ],
+    "uuid": "d4145a47"
 }

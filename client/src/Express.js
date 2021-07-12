@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Component } from "react";
-import CollaterizeContract from "./contracts/Collaterize.json";
+import ReactDOM from "react-dom";
+import KeylinkContract from "./contracts/Keylink.json";
 import ILiquidationCheck from "./contracts/ILiquidationCheck.json";
 import CountLiquidationCheck from "./contracts/CountLiquidationCheck.json";
 
@@ -54,6 +55,10 @@ import PropTypes from "prop-types";
 
 import { IconButton } from "@material-ui/core";
 import { readURL } from "./utils";
+
+import OnramperWidget from "@onramper/widget";
+const ONRAMPER_API = "pk_test_jWCXCkJiKkFktEIitty3O160jc7OHEj2l0Hq93ngofw0";
+
 const WhiteTypography = withStyles({
   root: {
     color: "#FFFFFF",
@@ -63,6 +68,7 @@ const WhiteTypography = withStyles({
 const secret = require("./secret.json");
 const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
 const axios = require("axios");
+const server_url = secret.server_url;
 // const uint8ArrayConcat = require("uint8arrays/concat");
 // const uint8ArrayToString = require("uint8arrays/to-string");
 
@@ -472,39 +478,270 @@ const Deposit = ({
   const [amount, setAmount] = useState(0);
   const [memo, setMemo] = useState("");
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
+  const [openOnRampRequestDialog, setOpenOnRampRequestDialog] = useState(false);
   const confirmationDialog = async () => {
     setOpenBackdrop(true);
     setOpenConfirmationDialog(true);
   };
 
+  const onramp = async (symbol, amount, decimals) => {
+    setOpenOnRampRequestDialog(true);
+    const amountDecimals_ = amount / Math.pow(10, decimals);
+    let amountDecimals = parseFloat(amountDecimals_.toPrecision(5));
+    if (amountDecimals < amountDecimals_) {
+      let difference = amountDecimals_ - amountDecimals;
+      amountDecimals += Math.pow(10, Math.floor(Math.log10(difference)) + 1);
+      amountDecimals = parseFloat(amountDecimals.toPrecision(5));
+    }
+    let onRampMessage = amountDecimals.toString() + " " + symbol;
+    onRampMessage = `It appears that you are ${onRampMessage} short of the required deposit payment. Would you like to purchase this amount?`;
+    let response = await new Promise((resolve, reject) => {
+      addOnRampDialog({ resolve, onRampMessage });
+    });
+
+    // fetch rate and convert to USD
+    const fromCurrency = "USD";
+    const toCurrency = symbol;
+    const paymentMethod = "creditCard";
+    // let response = await axios.get("https://onramper.tech/rate/${fromCurrency}/${toCurrency}/${paymentMethod}/${amount}");
+    let gateways = await axios.get(
+      `https://onramper.tech/rate/${fromCurrency}/${toCurrency}/${paymentMethod}/${amountDecimals}?amountInCrypto=true`,
+      {
+        headers: {
+          Authorization: `Basic ${ONRAMPER_API}`,
+        },
+      }
+    );
+
+    let defaultOption = -1;
+
+    for (var i = 0; i < gateways.data.length; i++) {
+      let option = gateways.data[i];
+      if (option.available) {
+        defaultOption = i;
+        break;
+      }
+    }
+
+    if (!response.ok) return false;
+    if (defaultOption == -1) {
+      addOnRampDialog({
+        onRampMessage:
+          "Sorry, there is no available payment method on our integrated payment service that supports this transaction. Please visit other exchanges such as Binance or Coinbase to obtain the required crypto.",
+      });
+      return false;
+    }
+    response = await new Promise((resolve, reject) => {
+      addOnramperWidgetDialog({
+        resolve,
+        symbol,
+        amount: gateways.data[defaultOption].receivedCrypto,
+        amountDecimals,
+      });
+    });
+
+    if (!response.ok) return false;
+    return true;
+  };
+
+  function addOnRampDialog({ resolve, onRampMessage }) {
+    const body = document.getElementsByTagName("body")[0];
+    const div = document.createElement("div");
+    body.appendChild(div);
+    ReactDOM.render(
+      <OnRampConfirmationDialog
+        resolve={resolve}
+        onRampMessage={onRampMessage}
+      />,
+      div
+    );
+  }
+
+  function removeOnRampDialog() {
+    const div = document.getElementById("onrampdialog");
+    const body = document.getElementsByTagName("body")[0];
+    body.removeChild(div);
+  }
+
+  const OnRampConfirmationDialog = ({ resolve, onRampMessage }) => {
+    return (
+      <Dialog
+        id="onrampdialog"
+        open={true}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Insufficient Funds</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {onRampMessage}
+          </DialogContentText>
+        </DialogContent>
+        {resolve ? (
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setOpenBackdrop(false);
+                resolve({ ok: false });
+                removeOnRampDialog();
+              }}
+              color="primary"
+            >
+              No
+            </Button>
+            <Button
+              onClick={() => {
+                setOpenBackdrop(false);
+                resolve({ ok: true });
+                removeOnRampDialog();
+              }}
+              color="primary"
+            >
+              Yes
+            </Button>
+          </DialogActions>
+        ) : (
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setOpenBackdrop(false);
+                removeOnRampDialog();
+              }}
+              color="primary"
+            >
+              Okay
+            </Button>
+          </DialogActions>
+        )}
+      </Dialog>
+    );
+  };
+
+  function addOnramperWidgetDialog({
+    resolve,
+    symbol,
+    amount,
+    amountDecimals,
+  }) {
+    const body = document.getElementsByTagName("body")[0];
+    const div = document.createElement("div");
+    body.appendChild(div);
+    ReactDOM.render(
+      <OnramperWidgetDialog
+        resolve={resolve}
+        symbol={symbol}
+        amount={amount}
+        amountDecimals={amountDecimals}
+        filters={{
+          onlyCryptos: symbol,
+        }}
+      />,
+      div
+    );
+  }
+
+  function removeOnramperWidgetDialog() {
+    const div = document.getElementById("onramperwidgetdialog");
+    const body = document.getElementsByTagName("body")[0];
+    body.removeChild(div);
+  }
+
+  const OnramperWidgetDialog = ({
+    resolve,
+    symbol,
+    amount,
+    amountDecimals,
+  }) => {
+    return (
+      <Dialog
+        id="onramperwidgetdialog"
+        open={true}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Purchase Cryptocurrency ({amountDecimals} {symbol})
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            <div
+              style={{
+                width: "440px",
+                height: "595px",
+              }}
+            >
+              <OnramperWidget
+                API_KEY={ONRAMPER_API}
+                defaultCrypto={symbol}
+                defaultAmount={amount}
+                defaultPaymentMethod={"onlyCryptos"}
+              />
+            </div>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenBackdrop(false);
+              resolve({ ok: false });
+              removeOnramperWidgetDialog();
+            }}
+            color="primary"
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
   const fulfillRequest = async () => {
     try {
       let response;
+      let balance;
+      let amount_units = Math.ceil(
+        amount * Math.pow(10, constants.assets[asset].decimals)
+      );
       if (constants.assets[asset].address == "NATIVE") {
+        balance = await web3.eth.getBalance(account);
+
+        if (balance < amount_units) {
+          const onramp_response = await onramp(
+            constants.assets[asset].symbol,
+            amount_units - balance,
+            constants.assets[asset].decimals
+          );
+          if (!onramp_response) return;
+        }
+
         response = await keylinkContract.methods
           .createCollateralETH(2, ipfsHash, lcAddresses[0], web3.utils.toHex(2))
           .send({
-            value: Math.ceil(
-              amount * Math.pow(10, constants.assets[asset].decimals)
-            ),
+            value: amount_units,
           });
       } else {
-        let am = Math.ceil(
-          amount * Math.pow(10, constants.assets[asset].decimals)
-        ).toString();
-
         let ERC20Contract = new web3.eth.Contract(
           IERC20.abi,
           constants.assets[asset].address,
           { from: account, gasLimit: 60000 }
         );
+
+        if (balance < amount_units) {
+          const onramp_response = await onramp(
+            constants.assets[asset].address,
+            amount_units - balance,
+            constants.assets[asset].decimals
+          );
+          if (!onramp_response) return;
+        }
+
         await ERC20Contract.methods
-          .approve(keylinkContract.options.address, am)
+          .approve(keylinkContract.options.address, amount_units)
           .send();
         response = await keylinkContract.methods
           .createCollateralERC20(
             constants.assets[asset].address,
-            am,
+            amount_units,
             2,
             ipfsHash,
             lcAddresses[0],
@@ -532,10 +769,7 @@ const Deposit = ({
       };
 
       // await transporter.sendMail(mailOptions);
-      await axios.post(
-        "https://9uncarfn24.execute-api.us-east-2.amazonaws.com/dev/items",
-        mailOptions
-      );
+      await axios.post(`${server_url}/dev/items`, mailOptions);
       window.location = "/";
     } catch (error) {
       console.log(error);
@@ -633,6 +867,7 @@ const Deposit = ({
           </Button>
         </DialogActions>
       </Dialog>
+
       {ipfsHash == "" ? (
         <Grid container style={{ width: "100%", justifyContent: "center" }}>
           <Grid item>

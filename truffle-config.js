@@ -32,6 +32,29 @@ module.exports = {
       gas: 4500000,
       gasPrice: 10000000000,
     },
+
+    bsc_testnet: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.val2,
+          `https://data-seed-prebsc-1-s1.binance.org:8545`
+        ),
+      network_id: 97,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+    },
+    bsc: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.val2,
+          `https://bsc-dataseed1.binance.org`
+        ),
+      network_id: 56,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+    },
   },
   compilers: {
     solc: {

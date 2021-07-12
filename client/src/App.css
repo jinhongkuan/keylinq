@@ -1,3 +1,5 @@
+@font-face { font-family: Circular; src: url('circular.ttf'); } 
+
 .App {
   text-align: center;
 }
@@ -25,6 +27,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .appbar {
