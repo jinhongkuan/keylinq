@@ -231,6 +231,11 @@ const App = (props) => {
     const networkId = await web3.eth.net.getId();
 
     let constantsRequest = (await axios.get(`${server_url}/environment`)).data;
+
+    if (!(networkId in constantsRequest.lcAddresses)) {
+      setWrongNetwork(true);
+      return;
+    }
     const tokenList = constantsRequest.tokenAddresses[networkId];
     const nativeToken = constantsRequest.nativeTokens[networkId];
     const lc = constantsRequest.lcAddresses;
@@ -266,19 +271,14 @@ const App = (props) => {
       };
     }
 
-    try {
-      var instance;
-      console.log(KeylinkContract.networks[networkId]);
-      instance = new web3.eth.Contract(
-        KeylinkContract.abi,
-        KeylinkContract.networks[networkId] &&
-          KeylinkContract.networks[networkId].address,
-        { gasLimit: 1000000, from: account }
-      );
-    } catch (error) {
-      setWrongNetwork(true);
-      return;
-    }
+    var instance;
+    console.log(KeylinkContract.networks[networkId]);
+    instance = new web3.eth.Contract(
+      KeylinkContract.abi,
+      KeylinkContract.networks[networkId] &&
+        KeylinkContract.networks[networkId].address,
+      { gasLimit: 1000000, from: account }
+    );
 
     const allCollaterals = await instance.methods
       .getOwnedCollaterals(account)
@@ -411,8 +411,8 @@ const App = (props) => {
             </Box>
           </Toolbar>
         </AppBar>
-        {wrongNetwork ? (
-          <WrongNetwork />
+        {wrongNetwork && page != "info" ? (
+          <WrongNetwork setWrongNetwork={setWrongNetwork} />
         ) : (
           <Switch>
             <Route
@@ -431,7 +431,10 @@ const App = (props) => {
               )}
             />
 
-            <Route path="/info" render={() => <Info classes={classes} />} />
+            <Route
+              path="/info"
+              render={() => <Info classes={classes} setPage={setPage} />}
+            />
 
             <Route
               path="/create/"
@@ -901,7 +904,7 @@ const Create = ({
   );
 };
 
-const WrongNetwork = () => {
+const WrongNetwork = ({ setWrongNetwork }) => {
   return (
     <div class="center body-vertical-span">
       <Grid container justify="center">
@@ -911,16 +914,35 @@ const WrongNetwork = () => {
         <Box width="100%"></Box>
         <Grid item justify="center">
           <Typography variant="h4" align="center">
-            It appears that you are on the wrong network! Please switch to
-            Rinkeby Testnet.
+            Please switch to supported networks to use this app.
           </Typography>
+          <div class="center">
+            <Link
+              to="/info"
+              style={{
+                textDecoration: "none",
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setWrongNetwork(false);
+                }}
+              >
+                Learn More
+              </Button>
+            </Link>
+          </div>
         </Grid>
       </Grid>
     </div>
   );
 };
 
-const Info = ({ classes }) => {
+const Info = ({ classes, setPage }) => {
+  useEffect(() => {
+    setPage("info");
+  }, []);
   return (
     <div class="center" style={{ marginTop: "8vh", fontFamily: "Roboto" }}>
       <FadeIn>
@@ -1046,12 +1068,16 @@ const Info = ({ classes }) => {
                 </Paper>
               </Grid>
               <Grid item>
-                <Paper style={{ backgroundColor: "yellow", margin: 20, padding: 4  }}>
+                <Paper
+                  style={{ backgroundColor: "yellow", margin: 20, padding: 4 }}
+                >
                   Ethereum: Rinkeby testnet
                 </Paper>
               </Grid>
               <Grid item>
-                <Paper style={{ backgroundColor: "yellow", margin: 20, padding: 4  }}>
+                <Paper
+                  style={{ backgroundColor: "yellow", margin: 20, padding: 4 }}
+                >
                   Polygon: Testnet
                 </Paper>
               </Grid>
