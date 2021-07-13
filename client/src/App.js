@@ -48,11 +48,12 @@ import FadeIn from "react-fade-in";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Tooltip from "@material-ui/core/Tooltip";
+import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
 import Typography from "@material-ui/core/Typography";
 import Key from "@material-ui/icons/VpnKey";
 import HelpIcon from "@material-ui/icons/Help";
 import EnhancedEncryptionIcon from "@material-ui/icons/EnhancedEncryption";
-import SwapIcon from "@material-ui/icons/SwapHoriz";
+import YoutubeIcon from "@material-ui/icons/YouTube";
 import Select from "@material-ui/core/Select";
 import TextField from "@material-ui/core/TextField";
 import { createMuiTheme } from "@material-ui/core/styles";
@@ -676,8 +677,10 @@ const MainApp = ({
                 <Grid item>
                   <Link to="/express" style={{ textDecoration: "none" }}>
                     <Button variant="contained" color="secondary">
-                      <SwapIcon style={{ padding: 5 }}></SwapIcon>
-                      Payments
+                      <KeyboardArrowRightIcon
+                        style={{ padding: 5 }}
+                      ></KeyboardArrowRightIcon>
+                      Quick Actions
                     </Button>
                   </Link>
                 </Grid>
@@ -1021,10 +1024,11 @@ const Info = ({ classes, setPage }) => {
               style={{ width: 100, height: 100 }}
             ></img>
             <p style={{ textAlign: "justify" }}>
-              Buyer commissions work from contract worker. Contract worker sends
-              a Keylinq request for buyer to open an <b>all keys</b> vault with
-              required amount. First key is automatically sent to worker, while
-              second key is sent by buyer upon work completion.
+              Buyer commissions work from contractor. Contractor sends a Keylinq
+              request for buyer to open an <b>all keys</b> vault with the
+              required payment amount. First key is automatically sent to
+              contractor to begin work, while second key is sent by buyer to
+              contractor upon work completion.
             </p>
           </div>
           <div style={{ width: "10vw" }}></div>
@@ -1039,8 +1043,9 @@ const Info = ({ classes, setPage }) => {
             <p style={{ textAlign: "justify" }}>
               Ever worried that you will send your crypto to the wrong address?
               Using our SafeTransfer feature, you can instead transfer to an{" "}
-              <b>any key</b> vault, and hand one key over to your recepient.
-              Both sides can unlock with a single key.
+              <b>any key</b> vault, and transfer one key to your recepient. Both
+              sides can unlock the vault with a single key, thus you can
+              recuperate the amount if mistake were made.
             </p>
           </div>
         </div>
@@ -1054,20 +1059,49 @@ const Info = ({ classes, setPage }) => {
                 <b>Chainlink integration</b>
               </span>
               <img
-                src={ChainlinkLogo}
+                src={require("./resources/chainlink_logo.svg")}
                 style={{ width: 25, height: 29, marginLeft: 10 }}
               ></img>
             </div>
             <p style={{ textAlign: "justify" }}>
-              We will integrate with Chainlink to allow for oracle-based
-              automatic key transfer. As a user, you can transfer a key to the
-              Keylinq Oracle Delegator with a specified third-party data
+              We will integrate with{" "}
+              <a href="https://chain.link/" target="_blank">
+                Chainlink
+              </a>{" "}
+              to allow for oracle-based automatic key transfer. As a user, you
+              can transfer a key to the
+              <b> Keylinq Oracle Delegator</b> with a specified third-party data
               endpoint. The Delegator will then delegate the key according to
               specified conditions, enabling conditional payments (e.g. upon
               task completion or package delivery).
             </p>
           </div>
-          <div class="break"></div>
+
+          <div class="break" style={{ height: 25 }}></div>
+
+          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+            <div class="center">
+              <span>
+                <b>Superfluid integration</b>
+              </span>
+              <img
+                src={require("./resources/superfluid_logo.png")}
+                style={{ width: 25, height: 25, marginLeft: 10 }}
+              ></img>
+            </div>
+            <p style={{ textAlign: "justify" }}>
+              Combining our virtual vaults with{" "}
+              <a href="https://www.superfluid.finance/home" target="_blank">
+                Superfluid
+              </a>{" "}
+              allows for guaranteed payment stream. Instead of transferring the
+              lump sum to the recepient, open a <b>Superfluid-enabled vault</b>,
+              so that the crypto asset will be continuously transferred at fixed
+              rate from the vault to the key holder's account.
+            </p>
+          </div>
+
+          <div class="break" style={{ height: 25 }}></div>
           <div style={{ textAlign: "center", lineHeight: 1.5 }}>
             <b>Available on:</b>
             <Grid container>
@@ -1141,6 +1175,16 @@ const Info = ({ classes, setPage }) => {
                 </Paper>
               </Grid>
             </Grid>
+            <div class="center" style={{ marginTop: 25 }}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  window.open("https://www.youtube.com/watch?v=u49EeyjkjlI");
+                }}
+              >
+                <YoutubeIcon></YoutubeIcon> Demo
+              </Button>
+            </div>
             <div style={{ height: 100 }}></div>
           </div>
         </div>

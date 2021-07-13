@@ -44,6 +44,7 @@ import FileCopy from "@material-ui/icons/FileCopy";
 import Close from "@material-ui/icons/Close";
 import Select from "@material-ui/core/Select";
 import ListAlt from "@material-ui/icons/ListAlt";
+import SwapIcon from "@material-ui/icons/SwapHoriz";
 import PaymentIcon from "@material-ui/icons/Payment";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -97,31 +98,48 @@ const Express = ({
     <div class="center body-vertical-span">
       <div class="center">
         <Grid container spacing={2} justify="center">
-          <Grid container item justify="center">
-            <Link to="/deposit" style={{ textDecoration: "none" }}>
+          <Grid item>
+            <Link to="/request" style={{ textDecoration: "none" }}>
               <Button
-                variant="contained"
+                variant="outlined"
                 color="secondary"
-                style={{ width: 150 }}
+                style={{
+                  width: 200,
+                  height: 200,
+                  margin: 20,
+                  textTransform: "none",
+                }}
               >
-                <PaymentIcon style={{ padding: 5 }}></PaymentIcon>
-                Deposit
+                <div style={{ marginTop: 15 }}>
+                  <ListAlt style={{ width: 50, height: 50 }}></ListAlt>
+                  <p>
+                    <h2 style={{ margin: 0 }}>Request</h2>
+                  </p>
+                  <p>Create a shareable link for deposit payment</p>
+                </div>
               </Button>
             </Link>
           </Grid>
-          <Grid container item justify="center">
-            <Grid item>
-              <Link to="/request" style={{ textDecoration: "none" }}>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  style={{ width: 150 }}
-                >
-                  <ListAlt style={{ padding: 5 }}></ListAlt>
-                  Request
-                </Button>
-              </Link>
-            </Grid>
+          <Grid item>
+            <Button
+              variant="outlined"
+              color="secondary"
+              style={{
+                width: 200,
+                height: 200,
+                margin: 20,
+                textTransform: "none",
+              }}
+              disabled
+            >
+              <div style={{ marginTop: 15 }}>
+                <SwapIcon style={{ width: 50, height: 50 }}></SwapIcon>
+                <p>
+                  <h2 style={{ margin: 0 }}>SafeTransfer</h2>
+                </p>
+                <p>Initiate a reversible crypto transfer (until accepted)</p>
+              </div>
+            </Button>
           </Grid>
         </Grid>
       </div>
