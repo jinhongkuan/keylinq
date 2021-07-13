@@ -391,15 +391,18 @@ const App = (props) => {
             </Link>
 
             <Box className={classes.tool_bar}>
-              <IconButton
-                onClick={() => {
-                  window.open(
-                    "https://www.notion.so/Keylinq-42a1e15b92aa458d9cea776e9db97ae7"
-                  );
-                }}
-              >
-                <HelpIcon></HelpIcon>
-              </IconButton>
+              <Link to="/info">
+                <IconButton
+                // onClick={() => {
+                //   window.open(
+                //     "https://www.notion.so/Keylinq-42a1e15b92aa458d9cea776e9db97ae7"
+                //   );
+                // }}
+                >
+                  <HelpIcon></HelpIcon>
+                </IconButton>
+              </Link>
+
               <Button
                 variant="contained"
                 color={account ? "disabled" : "secondary"}
@@ -836,7 +839,10 @@ const Create = ({
                       ? Object.keys(constants.assets).map((key, index) => (
                           <MenuItem value={key}>
                             <ListItemIcon>
-                              <img src={constants.assets[key].icon}></img>
+                              <img
+                                src={constants.assets[key].icon}
+                                style={{ width: 25, height: 25 }}
+                              ></img>
                             </ListItemIcon>
                             <ListItemText>
                               {key} (
@@ -956,7 +962,12 @@ const Info = ({ classes, setPage }) => {
           </h1>
         </div>
         <div class="center">
-          <h3 style={{ color: "gray", marginTop: 50 }}>How Does it Work?</h3>
+          <Link to="/" style={{ textDecoration: "none", marginTop: 25 }}>
+            <Button variant="outlined">Use App</Button>
+          </Link>
+        </div>
+        <div class="center">
+          <h3 style={{ color: "gray", marginTop: 25 }}>How Does it Work?</h3>
           <div class="break"></div>
           <div style={{ width: "35vw", textAlign: "center", lineHeight: 1.5 }}>
             <p>
@@ -1058,27 +1069,75 @@ const Info = ({ classes, setPage }) => {
           </div>
           <div class="break"></div>
           <div style={{ textAlign: "center", lineHeight: 1.5 }}>
-            <b>Availability status</b>
+            <b>Available on:</b>
             <Grid container>
               <Grid item>
                 <Paper
-                  style={{ backgroundColor: "yellow", margin: 20, padding: 4 }}
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #413C3C 30%, #403721 90%)",
+                    color: "white",
+                    margin: 20,
+                    paddingLeft: 10,
+                    paddingRight: 10,
+                    paddingTop: 5,
+                    paddingBottom: 5,
+                    alignItems: "center",
+                    display: "flex",
+                  }}
+                  elevation={3}
                 >
-                  BSC: Testnet
+                  <img
+                    src={require("./resources/bnb_logo.png")}
+                    style={{ width: 25, height: 25, marginRight: 10 }}
+                  ></img>{" "}
+                  BSC (Testnet)
                 </Paper>
               </Grid>
               <Grid item>
                 <Paper
-                  style={{ backgroundColor: "yellow", margin: 20, padding: 4 }}
+                  style={{
+                    background:
+                      "linear-gradient(90deg, rgb(60, 60, 80) 30%, rgb(50, 50, 60) 90%)",
+                    color: "white",
+                    margin: 20,
+                    paddingLeft: 10,
+                    paddingRight: 10,
+                    paddingTop: 5,
+                    paddingBottom: 5,
+                    alignItems: "center",
+                    display: "flex",
+                  }}
+                  elevation={3}
                 >
-                  Ethereum: Rinkeby testnet
+                  <img
+                    src={require("./resources/ethereum_logo.png")}
+                    style={{ width: 25, height: 25, marginRight: 10 }}
+                  ></img>{" "}
+                  Ethereum (Rinkeby)
                 </Paper>
               </Grid>
               <Grid item>
                 <Paper
-                  style={{ backgroundColor: "yellow", margin: 20, padding: 4 }}
+                  style={{
+                    background:
+                      "linear-gradient(90deg, rgb(80, 60, 80) 30%, rgb(65, 40, 60) 90%)",
+                    color: "white",
+                    margin: 20,
+                    paddingLeft: 10,
+                    paddingRight: 10,
+                    paddingTop: 5,
+                    paddingBottom: 5,
+                    alignItems: "center",
+                    display: "flex",
+                  }}
+                  elevation={3}
                 >
-                  Polygon: Testnet
+                  <img
+                    src={require("./resources/polygon_logo.png")}
+                    style={{ width: 25, height: 25, marginRight: 10 }}
+                  ></img>{" "}
+                  Polygon (Testnet)
                 </Paper>
               </Grid>
             </Grid>
