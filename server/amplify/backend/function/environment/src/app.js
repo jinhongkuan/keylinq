@@ -29,6 +29,32 @@ app.use(function (req, res, next) {
 app.get("/environment", function (req, res) {
   // Add your code here
   res.json({
+    waitTime: {
+      97: "3 seconds",
+      4: "15 seconds",
+      80001: "3 seconds",
+    },
+
+    waitMessage: [
+      "Dialing up Satoshi Nakamoto...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Awaiting transaction confirmation...",
+      "Solving cryptographic hash...",
+      "Broadcasting to blockchain...",
+      "Awaiting consensus from all nodes...",
+      "Solving cryptographic hash...",
+      "Broadcasting to blockchain...",
+      "Awaiting consensus from all nodes...",
+    ],
+
     tokenAddresses: {
       97: [
         {
@@ -67,10 +93,27 @@ app.get("/environment", function (req, res) {
       ],
     },
     lcAddresses: {
-      Name: ["Unlock with all keys"],
-      97: ["0xbc1410fA0E6056522Ed939885414337731802e16"],
-      4: ["0xd6743dacc46D942199361D97E4A3930f3b0Ef42F"],
-      80001: ["0x62bC34a11cA2C71B049CA6bB62a9eeFbe8AA4fa2"],
+      97: [
+        {
+          address: "0xbc1410fA0E6056522Ed939885414337731802e16",
+          name: "Own set number of keys",
+          id: 0,
+        },
+      ],
+      4: [
+        {
+          address: "0xd6743dacc46D942199361D97E4A3930f3b0Ef42F",
+          name: "Own set number of keys",
+          id: 0,
+        },
+      ],
+      80001: [
+        {
+          address: "0x62bC34a11cA2C71B049CA6bB62a9eeFbe8AA4fa2",
+          name: "Own set number of keys",
+          id: 0,
+        },
+      ],
     },
 
     nativeTokens: {

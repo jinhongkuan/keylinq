@@ -42,6 +42,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Paper from "@material-ui/core/Paper";
+import InputAdornment from "@material-ui/core/InputAdornment";
 import MenuItem from "@material-ui/core/MenuItem";
 import MenuList from "@material-ui/core/MenuList";
 import FadeIn from "react-fade-in";
@@ -76,7 +77,9 @@ const server_url = secret.server_url;
 
 const mainTheme = createMuiTheme({
   typography: {
-    fontFamily: ["Roboto", '"Helvetica Neue"', "Arial", "sans-serif"].join(","),
+    fontFamily: ["Quicksand", '"Helvetica Neue"', "Arial", "sans-serif"].join(
+      ","
+    ),
   },
 
   palette: {
@@ -214,24 +217,41 @@ const App = (props) => {
   const [delegatorContract, setDelegatorContract] = useState(null);
   const [collateralList, setCollateralList] = useState(null);
   const [openBackdrop, setOpenBackdrop] = useState(false);
-  const [lcAddresses, setLCAddresses] = useState(null);
+  const [backdropMessage, setBackdropMessage] = useState("");
+
+  const updateBackdrop = (value, message, hideWaitTime) => {
+    if (value) {
+      message =
+        (message
+          ? message
+          : constants.waitMessage[
+              Math.floor(Math.random() * constants.waitMessage.length)
+            ]) + (hideWaitTime ? "" : ` (avg. time: ~${constants.waitTime})`);
+    }
+    setOpenBackdrop(value);
+    setBackdropMessage(message);
+  };
 
   const connectWeb3 = async () => {
     // Get network provider and web3 instance.
     let web3;
+    let account;
+    let networkId;
+    let constantsRequest;
     try {
       web3 = await getWeb3();
+      // Use web3 to get the user's accounts.
+      account = (await web3.eth.getAccounts())[0];
+      // Get the keylinkContract instance.
+
+      networkId = await web3.eth.net.getId();
+
+      constantsRequest = (await axios.get(`${server_url}/environment`)).data;
     } catch (error) {
+      setWrongNetwork(true);
+
       return false;
     }
-
-    // Use web3 to get the user's accounts.
-    const account = (await web3.eth.getAccounts())[0];
-    // Get the keylinkContract instance.
-
-    const networkId = await web3.eth.net.getId();
-
-    let constantsRequest = (await axios.get(`${server_url}/environment`)).data;
 
     if (!(networkId in constantsRequest.lcAddresses)) {
       setWrongNetwork(true);
@@ -239,12 +259,13 @@ const App = (props) => {
     }
     const tokenList = constantsRequest.tokenAddresses[networkId];
     const nativeToken = constantsRequest.nativeTokens[networkId];
-    const lc = constantsRequest.lcAddresses;
-
-    setLCAddresses(lc);
+    const lc = constantsRequest.lcAddresses[networkId];
 
     const _constants = {
       assets: {},
+      lcContracts: lc,
+      waitMessage: constantsRequest.waitMessage,
+      waitTime: constantsRequest.waitTime[networkId],
     };
     _constants["assets"][nativeToken.name] = {
       address: "NATIVE",
@@ -296,7 +317,7 @@ const App = (props) => {
       let decimals;
 
       if (parseInt(collateral.token) == 0) {
-        symbol = nativeToken;
+        symbol = nativeToken.symbol;
         decimals = 18;
       } else {
         var erc20MetadataContract = new web3.eth.Contract(
@@ -365,22 +386,42 @@ const App = (props) => {
   useEffect(() => {
     document.title = "Keylinq";
     (async () => {
-      if (window.ethereum) await connectWeb3();
+      await connectWeb3();
+      return;
     })();
   }, []);
 
   const handleBackdropClose = () => {
-    setOpenBackdrop(false);
+    updateBackdrop(false);
   };
   return (
     <ThemeProvider theme={mainTheme}>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Quicksand:500,700&amp;display=swap&amp;ver=1625765845"
+        media="all"
+        onload="this.media='all'"
+      ></link>
       <Router>
         <Backdrop
           className={classes.backdrop}
           open={openBackdrop}
           onClick={handleBackdropClose}
         >
-          <CircularProgress color="inherit" />
+          <div class="center">
+            <CircularProgress color="inherit" />
+            <div class="break"></div>
+            <Paper
+              style={{
+                padding: 5,
+                marginTop: 25,
+                backgroundColor: "rgba(0,0,0,0.7)",
+                color: "#fff",
+              }}
+            >
+              {backdropMessage}
+            </Paper>
+          </div>
         </Backdrop>
         <AppBar position="static" className="appbar">
           <Toolbar variant="dense">
@@ -429,7 +470,7 @@ const App = (props) => {
                   classes={classes}
                   keylinkContract={keylinkContract}
                   web3={web3}
-                  setOpenBackdrop={setOpenBackdrop}
+                  updateBackdrop={updateBackdrop}
                   setPage={setPage}
                 />
               )}
@@ -448,10 +489,9 @@ const App = (props) => {
                   account={account}
                   web3={web3}
                   classes={classes}
-                  setOpenBackdrop={setOpenBackdrop}
+                  updateBackdrop={updateBackdrop}
                   setPage={setPage}
                   constants={constants}
-                  lcAddresses={lcAddresses}
                 />
               )}
             ></Route>
@@ -464,7 +504,7 @@ const App = (props) => {
                   account={account}
                   web3={web3}
                   classes={classes}
-                  setOpenBackdrop={setOpenBackdrop}
+                  updateBackdrop={updateBackdrop}
                   setPage={setPage}
                 />
               )}
@@ -478,7 +518,7 @@ const App = (props) => {
                   account={account}
                   web3={web3}
                   classes={classes}
-                  setOpenBackdrop={setOpenBackdrop}
+                  updateBackdrop={updateBackdrop}
                   setPage={setPage}
                   constants={constants}
                 />
@@ -494,9 +534,8 @@ const App = (props) => {
                   web3={web3}
                   classes={classes}
                   constants={constants}
-                  setOpenBackdrop={setOpenBackdrop}
+                  updateBackdrop={updateBackdrop}
                   setPage={setPage}
-                  lcAddresses={lcAddresses}
                   match={match}
                 />
               )}
@@ -518,7 +557,7 @@ const MainApp = ({
   classes,
   keylinkContract,
   web3,
-  setOpenBackdrop,
+  updateBackdrop,
   setPage,
 }) => {
   const [open, setOpen] = useState(false);
@@ -543,7 +582,7 @@ const MainApp = ({
     setInd(0);
     setOpen(false);
     if (cont) {
-      setOpenBackdrop(true);
+      updateBackdrop(true);
       try {
         let response = await keylinkContract.methods
           .transfer(
@@ -555,13 +594,13 @@ const MainApp = ({
         window.location.reload(false);
       } catch (error) {
         console.log(error);
-        setOpenBackdrop(false);
+        updateBackdrop(false);
       }
     }
   };
 
   const handleUnlock = async (col, index) => {
-    setOpenBackdrop(true);
+    updateBackdrop(true);
     try {
       let response = await keylinkContract.methods
         .liquidate(col.id, index)
@@ -569,7 +608,7 @@ const MainApp = ({
       window.location.reload(false);
     } catch (error) {
       console.log(error);
-      setOpenBackdrop(false);
+      updateBackdrop(false);
     }
   };
 
@@ -660,7 +699,6 @@ const MainApp = ({
                   </Card>
                 ))
               : ""}
-
             <br />
             <div class="center">
               <Grid container spacing={2} justify="center">
@@ -700,33 +738,36 @@ const Create = ({
   keylinkContract,
   web3,
   classes,
-  setOpenBackdrop,
+  updateBackdrop,
   account,
   setPage,
   constants,
-  lcAddresses,
 }) => {
   if (!web3) window.location = "/";
   const [asset, setAsset] = useState("");
   const [name, setName] = useState("");
   const [accounts, setAccounts] = useState(2);
+  const [lcContract, setLCContract] = useState(0);
+  const [args, setArgs] = useState(web3.utils.toHex(2));
 
   var [amount, setAmount] = useState(0);
 
   const createCollateral = async () => {
-    setOpenBackdrop(true);
+    updateBackdrop(true, " ", true);
     let response;
     let hasApproved = false;
     let ERC20Contract;
 
     try {
       if (constants.assets[asset].address == "NATIVE") {
+        updateBackdrop(true, "Creating vault...", false);
+
         response = await keylinkContract.methods
           .createCollateralETH(
             accounts,
             name,
-            lcAddresses[0],
-            web3.utils.toHex(accounts)
+            constants.lcContracts[lcContract].address,
+            args
           )
           .send({
             value: Math.ceil(
@@ -738,17 +779,19 @@ const Create = ({
           amount * Math.pow(10, constants.assets[asset].decimals)
         ).toString();
 
-        console.log(am);
-
         ERC20Contract = new web3.eth.Contract(
           IERC20.abi,
           constants.assets[asset].address,
           { from: account, gasLimit: 60000 }
         );
+
+        updateBackdrop(true, "Transferring tokens...", false);
+
         await ERC20Contract.methods
           .approve(keylinkContract.options.address, am)
           .send();
         hasApproved = true;
+        updateBackdrop(true, "Creating vault...", false);
 
         response = await keylinkContract.methods
           .createCollateralERC20(
@@ -756,8 +799,8 @@ const Create = ({
             am,
             accounts,
             name,
-            lcAddresses[0],
-            web3.utils.toHex(accounts)
+            constants.lcContracts[lcContract].address,
+            args
           )
           .send();
       }
@@ -768,7 +811,7 @@ const Create = ({
       // if (hasApproved) {
       //   await ERC20Contract.methods.approve(keylinkContract.options.address, 0).send();
       // }
-      setOpenBackdrop(false);
+      updateBackdrop(false);
     }
   };
 
@@ -779,6 +822,14 @@ const Create = ({
     } else {
       setAsset(val);
     }
+  };
+
+  const lcUpdate = (index) => {
+    switch (index) {
+      case 0:
+        break;
+    }
+    setLCContract(index);
   };
 
   useEffect(() => {
@@ -815,9 +866,10 @@ const Create = ({
                   Descriptor
                 </TableCell>
                 <TableCell>
-                  <FormControl>
+                  <FormControl style={{ width: "100%" }}>
                     <TextField
                       label=""
+                      placeholder="What is this vault for?"
                       variant="outlined"
                       size="small"
                       onChange={(e) => {
@@ -832,33 +884,44 @@ const Create = ({
                   Assets
                 </TableCell>
                 <TableCell>
-                  <Select
-                    onChange={handleAssetSelection}
-                    variant="outlined"
-                    size="small"
-                    value={asset}
-                  >
-                    {constants
-                      ? Object.keys(constants.assets).map((key, index) => (
-                          <MenuItem value={key}>
-                            <ListItemIcon>
-                              <img
-                                src={constants.assets[key].icon}
-                                style={{ width: 25, height: 25 }}
-                              ></img>
-                            </ListItemIcon>
-                            <ListItemText>
-                              {key} (
-                              {(
-                                constants.assets[key].balance /
-                                Math.pow(10, constants.assets[key].decimals)
-                              ).toPrecision(5)}{" "}
-                              {constants.assets[key].symbol})
-                            </ListItemText>
-                          </MenuItem>
-                        ))
-                      : ""}
-                  </Select>
+                  <FormControl style={{ width: "100%" }}>
+                    <Select
+                      onChange={handleAssetSelection}
+                      variant="outlined"
+                      size="small"
+                      value={asset}
+                    >
+                      {constants
+                        ? Object.keys(constants.assets).map((key, index) => (
+                            <MenuItem value={key}>
+                              <div
+                                style={{
+                                  alignItems: "center",
+                                  display: "flex",
+                                }}
+                              >
+                                <img
+                                  src={constants.assets[key].icon}
+                                  style={{
+                                    width: 25,
+                                    height: 25,
+                                    marginRight: 15,
+                                  }}
+                                ></img>
+                                <span>
+                                  {key} (
+                                  {(
+                                    constants.assets[key].balance /
+                                    Math.pow(10, constants.assets[key].decimals)
+                                  ).toPrecision(5)}{" "}
+                                  {constants.assets[key].symbol})
+                                </span>
+                              </div>
+                            </MenuItem>
+                          ))
+                        : ""}
+                    </Select>
+                  </FormControl>
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -866,13 +929,21 @@ const Create = ({
                   Amount
                 </TableCell>
                 <TableCell>
-                  <FormControl>
+                  <FormControl style={{ width: "100%" }}>
                     <TextField
                       label=""
                       value={amount}
                       variant="outlined"
                       size="small"
                       className={classes.amount_input}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">{constants.assets[asset]
+                              ? constants.assets[asset].symbol
+                              : ""}
+                          </InputAdornment>
+                        ),
+                      }}
                       onChange={(e) => parseFloat(setAmount(e.target.value))}
                     ></TextField>
                   </FormControl>
@@ -880,25 +951,96 @@ const Create = ({
               </TableRow>
               <TableRow>
                 <TableCell style={{ verticalAlign: "text-top" }}>
-                  Keys
+                  Unlock Rule
                 </TableCell>
                 <TableCell>
-                  <FormControl>
+                  <FormControl style={{ width: "100%" }}>
                     <Select
-                      onChange={(e) => {
-                        setAccounts(e.target.value);
-                      }}
+                      onChange={(e) => setLCContract(e.target.value)}
                       variant="outlined"
                       size="small"
-                      value={accounts}
+                      value={lcContract}
                     >
-                      {[...Array(4).keys()].map((val) => (
-                        <option value={val + 2}>{val + 2}</option>
-                      ))}
+                      {constants
+                        ? constants.lcContracts.map((element, index) => (
+                            <MenuItem value={element.id}>
+                              {element.name}
+                            </MenuItem>
+                          ))
+                        : ""}
                     </Select>
                   </FormControl>
                 </TableCell>
               </TableRow>
+              <TableRow>
+                <TableCell style={{ verticalAlign: "text-top" }}>
+                  Total Keys
+                </TableCell>
+                <TableCell
+                  style={{ paddingTop: 0, paddingBottom: 0, paddingLeft: 4 }}
+                >
+                  <FormControl style={{ width: "100%" }}>
+                    <div style={{ display: "flex" }}>
+                      {[1, 2, 3].map((count) => (
+                        <Tooltip
+                          title={count + " key" + (count > 1 ? "s" : "")}
+                        >
+                          <IconButton
+                            onClick={() => setAccounts(count)}
+                            color={accounts >= count ? "secondary" : "disabled"}
+                            style={{
+                              marginTop: 0,
+                              marginBottom: 0,
+                            }}
+                          >
+                            <Key></Key>
+                          </IconButton>
+                        </Tooltip>
+                      ))}
+                    </div>
+                  </FormControl>
+                </TableCell>
+              </TableRow>
+              {lcContract == 0 ? (
+                <TableRow>
+                  <TableCell style={{ verticalAlign: "text-top" }}>
+                    Keys to <br></br> Unlock
+                  </TableCell>
+                  <TableCell
+                    style={{ paddingTop: 0, paddingBottom: 0, paddingLeft: 4 }}
+                  >
+                    <FormControl style={{ width: "100%" }}>
+                      <div style={{ display: "flex" }}>
+                        {[1, 2, 3].map((count) => (
+                          <Tooltip
+                            title={count + " key" + (count > 1 ? "s" : "")}
+                          >
+                            <IconButton
+                              onClick={() => {
+                                if (accounts >= count)
+                                  setArgs(web3.utils.toHex(count));
+                              }}
+                              color={
+                                web3.utils.hexToNumber(args) >= count
+                                  ? "secondary"
+                                  : "disabled"
+                              }
+                              style={{
+                                marginTop: 0,
+                                marginBottom: 0,
+                              }}
+                            >
+                              <Key></Key>
+                            </IconButton>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </FormControl>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                ""
+              )}
             </TableBody>
           </Table>
           <Grid container justify="flex-end">
@@ -953,7 +1095,7 @@ const Info = ({ classes, setPage }) => {
     setPage("info");
   }, []);
   return (
-    <div class="center" style={{ marginTop: "8vh", fontFamily: "Roboto" }}>
+    <div class="center" style={{ marginTop: "8vh", fontFamily: "Quicksand" }}>
       <FadeIn>
         <div class="center">
           <h1 style={{ lineHeight: 0.5, fontSize: 40, marginBottom: 15 }}>

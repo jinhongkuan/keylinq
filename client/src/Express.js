@@ -23,6 +23,8 @@ import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Table from "@material-ui/core/Table";
+import MenuItem from "@material-ui/core/MenuItem";
+
 import FormControl from "@material-ui/core/FormControl";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import TableBody from "@material-ui/core/TableBody";
@@ -77,7 +79,7 @@ const Express = ({
   keylinkContract,
   web3,
   classes,
-  setOpenBackdrop,
+  updateBackdrop,
   account,
   setPage,
 }) => {
@@ -147,7 +149,7 @@ const Express = ({
   );
 };
 
-const Request = ({ classes, constants, setOpenBackdrop, account }) => {
+const Request = ({ classes, constants, updateBackdrop, account }) => {
   const [asset, setAsset] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -157,7 +159,7 @@ const Request = ({ classes, constants, setOpenBackdrop, account }) => {
   const [ipfsLink, setIPFSLink] = useState("");
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const publishRequest = async () => {
-    setOpenBackdrop(true);
+    updateBackdrop(true);
     const cid = await nftStorageClient.storeDirectory([
       new File(
         [
@@ -349,6 +351,7 @@ const ExpressForm = ({
                 <FormControl style={{ width: "100%" }}>
                   <TextField
                     label=""
+                    placeholder="For deposit notification"
                     size="small"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -361,28 +364,7 @@ const ExpressForm = ({
               </TableCell>
             </TableRow>
 
-            <TableRow>
-              <TableCell style={{ verticalAlign: "text-top" }}>
-                Amount
-              </TableCell>
-              <TableCell>
-                <FormControl style={{ width: "100%" }}>
-                  <TextField
-                    label=""
-                    size="small"
-                    value={amount}
-                    className={classes.amount_input}
-                    onChange={(e) => parseFloat(setAmount(e.target.value))}
-                    variant="outlined"
-                    inputProps={{
-                      readOnly: rOnly,
-                    }}
-                  ></TextField>
-                </FormControl>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
+            {/* <TableRow>
               <TableCell style={{ verticalAlign: "text-top" }}>
                 Expiration<br></br>(Days)
               </TableCell>
@@ -401,42 +383,73 @@ const ExpressForm = ({
                   ></TextField>
                 </FormControl>
               </TableCell>
-            </TableRow>
+            </TableRow> */}
 
             <TableRow>
               <TableCell style={{ verticalAlign: "text-top" }}>
                 Assets
               </TableCell>
               <TableCell>
-                {rOnly ? (
-                  <TextField
-                    label=""
-                    size="small"
-                    value={asset}
-                    inputProps={{
-                      readOnly: rOnly,
-                    }}
-                    variant="outlined"
-                  ></TextField>
-                ) : (
+                <FormControl style={{ width: "100%" }}>
                   <Select
-                    native
                     onChange={(e) => {
                       setAsset(e.target.value);
                     }}
+                    variant="outlined"
+                    size="small"
+                    value={asset}
                   >
                     {constants
                       ? Object.keys(constants.assets).map((key, index) => (
-                          <option value={key}>
-                            {key} (
-                            {constants.assets[key].balance /
-                              Math.pow(10, constants.assets[key].decimals)}{" "}
-                            {constants.assets[key].symbol})
-                          </option>
+                          <MenuItem value={key}>
+                            <div
+                              style={{
+                                alignItems: "center",
+                                display: "flex",
+                              }}
+                            >
+                              <img
+                                src={constants.assets[key].icon}
+                                style={{
+                                  width: 25,
+                                  height: 25,
+                                  marginRight: 15,
+                                }}
+                              ></img>
+                              <span>{key}</span>
+                            </div>
+                          </MenuItem>
                         ))
                       : ""}
                   </Select>
-                )}
+                </FormControl>
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell style={{ verticalAlign: "text-top" }}>
+                Amount
+              </TableCell>
+              <TableCell>
+                <FormControl style={{ width: "100%" }}>
+                  <TextField
+                    label=""
+                    value={amount}
+                    variant="outlined"
+                    size="small"
+                    className={classes.amount_input}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          {constants && constants.assets[asset]
+                            ? constants.assets[asset].symbol
+                            : ""}
+                        </InputAdornment>
+                      ),
+                    }}
+                    onChange={(e) => parseFloat(setAmount(e.target.value))}
+                  ></TextField>
+                </FormControl>
               </TableCell>
             </TableRow>
 
@@ -479,7 +492,7 @@ const ExpressForm = ({
 const Deposit = ({
   classes,
   constants,
-  setOpenBackdrop,
+  updateBackdrop,
   web3,
   account,
   keylinkContract,
@@ -498,7 +511,7 @@ const Deposit = ({
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
   const [openOnRampRequestDialog, setOpenOnRampRequestDialog] = useState(false);
   const confirmationDialog = async () => {
-    setOpenBackdrop(true);
+    updateBackdrop(true);
     setOpenConfirmationDialog(true);
   };
 
@@ -599,7 +612,7 @@ const Deposit = ({
           <DialogActions>
             <Button
               onClick={() => {
-                setOpenBackdrop(false);
+                updateBackdrop(false);
                 resolve({ ok: false });
                 removeOnRampDialog();
               }}
@@ -609,7 +622,7 @@ const Deposit = ({
             </Button>
             <Button
               onClick={() => {
-                setOpenBackdrop(false);
+                updateBackdrop(false);
                 resolve({ ok: true });
                 removeOnRampDialog();
               }}
@@ -622,7 +635,7 @@ const Deposit = ({
           <DialogActions>
             <Button
               onClick={() => {
-                setOpenBackdrop(false);
+                updateBackdrop(false);
                 removeOnRampDialog();
               }}
               color="primary"
@@ -700,7 +713,7 @@ const Deposit = ({
         <DialogActions>
           <Button
             onClick={() => {
-              setOpenBackdrop(false);
+              updateBackdrop(false);
               resolve({ ok: false });
               removeOnramperWidgetDialog();
             }}
@@ -791,7 +804,7 @@ const Deposit = ({
       window.location = "/";
     } catch (error) {
       console.log(error);
-      setOpenBackdrop(false);
+      updateBackdrop(false);
     }
   };
 
@@ -809,7 +822,7 @@ const Deposit = ({
       //   dirData.push(chunk);
       // }
 
-      setOpenBackdrop(true);
+      updateBackdrop(true);
       const gateway = "https://ipfs.io/ipfs/";
       const details = JSON.parse(readURL(gateway + cid + "/details.json"));
       const payments = JSON.parse(readURL(gateway + cid + "/payment.json"));
@@ -839,10 +852,10 @@ const Deposit = ({
       setDescription(details.description);
       setEmail(details.email);
       setIPFSHash(cid);
-      setOpenBackdrop(false);
+      updateBackdrop(false);
     } catch (error) {
       console.log(error);
-      setOpenBackdrop(false);
+      updateBackdrop(false);
     }
   };
 
@@ -868,7 +881,7 @@ const Deposit = ({
           <Button
             onClick={() => {
               setOpenConfirmationDialog(false);
-              setOpenBackdrop(false);
+              updateBackdrop(false);
             }}
             color="primary"
           >
