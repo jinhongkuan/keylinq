@@ -2,7 +2,7 @@
 // Jin Hong Kuan 2021 Copyrighted
 pragma solidity ^0.8.0;
 
-import "../Keylink.sol"; 
+import "../Keylinq.sol"; 
 import "../ILiquidationCheck.sol";
 import "../IDelegator.sol";
 import "../libraries/BytesLib.sol"; 
@@ -21,7 +21,7 @@ contract KeyReservation is IDelegator {
     event Entrusted(address owner, uint256 id);
     event Returned(address claimant, uint256 id);
 
-    Keylink _keylink; 
+    Keylinq _keylinq; 
     mapping(uint256 => Record) private _records;
     mapping(uint256 => uint256[]) private _keys;
     mapping(uint256 => address) private _owners;
@@ -29,8 +29,8 @@ contract KeyReservation is IDelegator {
 
     uint256 private _counter = 0;
 
-    constructor(address keylink_) {
-        _keylink = Keylink(keylink_);
+    constructor(address keylinq_) {
+        _keylinq = Keylinq(keylinq_);
     }
 
     function isDelegator() external override pure returns(bool) {
@@ -38,8 +38,8 @@ contract KeyReservation is IDelegator {
     }
 
     function entrust(uint256 id, uint256 index, bytes memory _args) external {
-        require(_keylink.ownerOf(id, index) == msg.sender);
-        _keylink.transferFrom(address(this), id, index);
+        require(_keylinq.ownerOf(id, index) == msg.sender);
+        _keylinq.transferFrom(address(this), id, index);
         require(_args.length == 84, "KeyDelegator: Supplied arguments does not match mode"); 
         address token; 
         assembly {

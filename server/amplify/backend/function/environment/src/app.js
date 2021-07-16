@@ -91,6 +91,22 @@ app.get("/environment", function (req, res) {
           icon: "https://etherscan.io/token/images/centre-usdc_28.png",
         },
       ],
+      56: [
+        {
+          address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          name: "U.S. Dollar Coin",
+          symbol: "USDC",
+          decimals: 18,
+          icon: "https://etherscan.io/token/images/centre-usdc_28.png",
+        },
+        {
+          address: "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+          name: "Binance USD",
+          symbol: "BUSD",
+          decimals: 18,
+          icon: "https://etherscan.io/token/images/binanceusd_32.png",
+        },
+      ],
     },
     lcAddresses: {
       97: [
@@ -103,6 +119,13 @@ app.get("/environment", function (req, res) {
       4: [
         {
           address: "0xd6743dacc46D942199361D97E4A3930f3b0Ef42F",
+          name: "Own set number of keys",
+          id: 0,
+        },
+      ],
+      56: [
+        {
+          address: "0x4459637A88799815832ebe7f536271094E4A3d9c",
           name: "Own set number of keys",
           id: 0,
         },
@@ -130,6 +153,12 @@ app.get("/environment", function (req, res) {
         icon: "https://etherscan.io/images/main/empty-token.png",
       },
       97: {
+        name: "Binance Coin",
+        symbol: "BNB",
+        decimals: 18,
+        icon: "https://etherscan.io/token/images/bnb_28_2.png",
+      },
+      56: {
         name: "Binance Coin",
         symbol: "BNB",
         decimals: 18,

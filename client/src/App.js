@@ -1,12 +1,18 @@
 import React, { useState, useEffect, Component } from "react";
 import KeylinkContract from "./contracts/Keylink.json";
+import KeylinkProxy from "./contracts/KeylinqProxy.json";
 import ILiquidationCheck from "./contracts/ILiquidationCheck.json";
 import CountLiquidationCheck from "./contracts/CountLiquidationCheck.json";
 
 import IERC20 from "./contracts/IERC20.json";
 import IERC20Metadata from "./contracts/IERC20Metadata.json";
 import TestERC20 from "./contracts/ERC20.json";
-import getWeb3 from "./getWeb3";
+import {
+  getWeb3,
+  isMetaMaskInstalled,
+  isMetaMaskConnected,
+  isAddressConnected,
+} from "./getWeb3";
 import { Express, Request, Deposit } from "./Express.js";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { NFTStorage, File } from "nft.storage";
@@ -219,7 +225,7 @@ const App = (props) => {
   const [openBackdrop, setOpenBackdrop] = useState(false);
   const [backdropMessage, setBackdropMessage] = useState("");
 
-  const updateBackdrop = (value, message, hideWaitTime) => {
+  const updateBackdrop = async (value, message, hideWaitTime) => {
     if (value) {
       message =
         (message
@@ -238,6 +244,14 @@ const App = (props) => {
     let account;
     let networkId;
     let constantsRequest;
+    let instance;
+
+    if (!isMetaMaskInstalled()) {
+      console.log("not installed");
+      setWeb3({ error: "metamask not installed" });
+      return;
+    }
+
     try {
       web3 = await getWeb3();
       // Use web3 to get the user's accounts.
@@ -247,16 +261,26 @@ const App = (props) => {
       networkId = await web3.eth.net.getId();
 
       constantsRequest = (await axios.get(`${server_url}/environment`)).data;
+
+      instance = new web3.eth.Contract(
+        KeylinkContract.abi,
+        KeylinkProxy.networks[networkId] &&
+          KeylinkProxy.networks[networkId].address,
+        { gasLimit: 1000000, from: account }
+      );
+
+      if (
+        !(networkId in constantsRequest.lcAddresses) ||
+        !KeylinkProxy.networks[networkId]
+      ) {
+        throw Error();
+      }
     } catch (error) {
-      setWrongNetwork(true);
+      setWeb3({ error: "wrong network" });
 
       return false;
     }
 
-    if (!(networkId in constantsRequest.lcAddresses)) {
-      setWrongNetwork(true);
-      return;
-    }
     const tokenList = constantsRequest.tokenAddresses[networkId];
     const nativeToken = constantsRequest.nativeTokens[networkId];
     const lc = constantsRequest.lcAddresses[networkId];
@@ -292,15 +316,6 @@ const App = (props) => {
         icon: icon,
       };
     }
-
-    var instance;
-    console.log(KeylinkContract.networks[networkId]);
-    instance = new web3.eth.Contract(
-      KeylinkContract.abi,
-      KeylinkContract.networks[networkId] &&
-        KeylinkContract.networks[networkId].address,
-      { gasLimit: 1000000, from: account }
-    );
 
     const allCollaterals = await instance.methods
       .getOwnedCollaterals(account)
@@ -435,13 +450,16 @@ const App = (props) => {
             <Box className={classes.tool_bar}>
               <Link to="/info">
                 <IconButton
+
                 // onClick={() => {
                 //   window.open(
                 //     "https://www.notion.so/Keylinq-42a1e15b92aa458d9cea776e9db97ae7"
                 //   );
                 // }}
                 >
-                  <HelpIcon></HelpIcon>
+                  <HelpIcon
+                    style={{ color: "rgba(255,255,255,255)" }}
+                  ></HelpIcon>
                 </IconButton>
               </Link>
 
@@ -456,92 +474,89 @@ const App = (props) => {
             </Box>
           </Toolbar>
         </AppBar>
-        {wrongNetwork && page != "info" ? (
-          <WrongNetwork setWrongNetwork={setWrongNetwork} />
-        ) : (
-          <Switch>
-            <Route
-              exact
-              path="/"
-              render={() => (
-                <MainApp
-                  collateralList={collateralList}
-                  account={account}
-                  classes={classes}
-                  keylinkContract={keylinkContract}
-                  web3={web3}
-                  updateBackdrop={updateBackdrop}
-                  setPage={setPage}
-                />
-              )}
-            />
 
-            <Route
-              path="/info"
-              render={() => <Info classes={classes} setPage={setPage} />}
-            />
+        <Switch>
+          <Route
+            exact
+            path="/"
+            render={() => (
+              <MainApp
+                collateralList={collateralList}
+                account={account}
+                classes={classes}
+                keylinkContract={keylinkContract}
+                web3={web3}
+                updateBackdrop={updateBackdrop}
+                setPage={setPage}
+              />
+            )}
+          />
 
-            <Route
-              path="/create/"
-              render={() => (
-                <Create
-                  keylinkContract={keylinkContract}
-                  account={account}
-                  web3={web3}
-                  classes={classes}
-                  updateBackdrop={updateBackdrop}
-                  setPage={setPage}
-                  constants={constants}
-                />
-              )}
-            ></Route>
+          <Route
+            path="/info"
+            render={() => <Info classes={classes} setPage={setPage} />}
+          />
 
-            <Route
-              path="/express/"
-              render={() => (
-                <Express
-                  keylinkContract={keylinkContract}
-                  account={account}
-                  web3={web3}
-                  classes={classes}
-                  updateBackdrop={updateBackdrop}
-                  setPage={setPage}
-                />
-              )}
-            ></Route>
+          <Route
+            path="/create/"
+            render={() => (
+              <Create
+                keylinkContract={keylinkContract}
+                account={account}
+                web3={web3}
+                classes={classes}
+                updateBackdrop={updateBackdrop}
+                setPage={setPage}
+                constants={constants}
+              />
+            )}
+          ></Route>
 
-            <Route
-              path="/request/"
-              render={() => (
-                <Request
-                  keylinkContract={keylinkContract}
-                  account={account}
-                  web3={web3}
-                  classes={classes}
-                  updateBackdrop={updateBackdrop}
-                  setPage={setPage}
-                  constants={constants}
-                />
-              )}
-            ></Route>
+          <Route
+            path="/express/"
+            render={() => (
+              <Express
+                keylinkContract={keylinkContract}
+                account={account}
+                web3={web3}
+                classes={classes}
+                updateBackdrop={updateBackdrop}
+                setPage={setPage}
+              />
+            )}
+          ></Route>
 
-            <Route
-              path="/deposit/:cid?"
-              render={({ match }) => (
-                <Deposit
-                  keylinkContract={keylinkContract}
-                  account={account}
-                  web3={web3}
-                  classes={classes}
-                  constants={constants}
-                  updateBackdrop={updateBackdrop}
-                  setPage={setPage}
-                  match={match}
-                />
-              )}
-            ></Route>
-          </Switch>
-        )}
+          <Route
+            path="/request/"
+            render={() => (
+              <Request
+                keylinkContract={keylinkContract}
+                account={account}
+                web3={web3}
+                classes={classes}
+                updateBackdrop={updateBackdrop}
+                setPage={setPage}
+                constants={constants}
+              />
+            )}
+          ></Route>
+
+          <Route
+            path="/deposit/:cid?"
+            render={({ match }) => (
+              <Deposit
+                keylinkContract={keylinkContract}
+                account={account}
+                web3={web3}
+                classes={classes}
+                constants={constants}
+                updateBackdrop={updateBackdrop}
+                setPage={setPage}
+                match={match}
+              />
+            )}
+          ></Route>
+        </Switch>
       </Router>
     </ThemeProvider>
   );
@@ -648,87 +663,96 @@ const MainApp = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <div>
-        <div class="center body-vertical-span">
-          <div>
-            {collateralList
-              ? collateralList.map((collateral) => (
-                  <Card className={classes.collateral_card} elevation={3}>
-                    <CardContent>
-                      <Typography className={classes.title_display}>
-                        {collateral.name}
-                      </Typography>
-                      <Typography className={classes.amount_display}>
-                        {collateral.amount / Math.pow(10, collateral.decimals)}{" "}
-                        {collateral.symbol}
-                      </Typography>
-                      <Box className={classes.key_box}>
-                        {collateral.accounts.map((addr, i) => (
-                          <Tooltip title={addr == account ? "You" : addr}>
-                            <div>
-                              <IconButton
-                                className={classes.key}
-                                onClick={() =>
-                                  handleKeyClick(collateral, i, addr == account)
-                                }
-                              >
-                                <Key
-                                  color={
-                                    addr == account ? "secondary" : "disabled"
+      {web3 && "error" in web3 ? (
+        <WrongNetwork web3={web3} />
+      ) : (
+        <div>
+          <div class="center body-vertical-span">
+            <div>
+              {collateralList
+                ? collateralList.map((collateral) => (
+                    <Card className={classes.collateral_card} elevation={3}>
+                      <CardContent>
+                        <Typography className={classes.title_display}>
+                          {collateral.name}
+                        </Typography>
+                        <Typography className={classes.amount_display}>
+                          {collateral.amount /
+                            Math.pow(10, collateral.decimals)}{" "}
+                          {collateral.symbol}
+                        </Typography>
+                        <Box className={classes.key_box}>
+                          {collateral.accounts.map((addr, i) => (
+                            <Tooltip title={addr == account ? "You" : addr}>
+                              <div>
+                                <IconButton
+                                  className={classes.key}
+                                  onClick={() =>
+                                    handleKeyClick(
+                                      collateral,
+                                      i,
+                                      addr == account
+                                    )
                                   }
-                                />
-                              </IconButton>
-                              <br></br>
-                            </div>
-                          </Tooltip>
-                        ))}
-                      </Box>
-                    </CardContent>
-                    <CardActions>
-                      <Button
-                        size="small"
-                        className={classes.unlock_button}
-                        disabled={collateral.liquidation.length == 0}
-                        onClick={() =>
-                          handleUnlock(collateral, collateral.liquidation[0])
-                        }
-                      >
-                        Unlock
+                                >
+                                  <Key
+                                    color={
+                                      addr == account ? "secondary" : "disabled"
+                                    }
+                                  />
+                                </IconButton>
+                                <br></br>
+                              </div>
+                            </Tooltip>
+                          ))}
+                        </Box>
+                      </CardContent>
+                      <CardActions>
+                        <Button
+                          size="small"
+                          className={classes.unlock_button}
+                          disabled={collateral.liquidation.length == 0}
+                          onClick={() =>
+                            handleUnlock(collateral, collateral.liquidation[0])
+                          }
+                        >
+                          Unlock
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  ))
+                : ""}
+              <br />
+              <div class="center">
+                <Grid container spacing={2} justify="center">
+                  <Grid item>
+                    <Link to="/create" style={{ textDecoration: "none" }}>
+                      <Button variant="contained" color="secondary">
+                        <EnhancedEncryptionIcon
+                          style={{ padding: 5 }}
+                        ></EnhancedEncryptionIcon>
+                        Create Vault
                       </Button>
-                    </CardActions>
-                  </Card>
-                ))
-              : ""}
-            <br />
-            <div class="center">
-              <Grid container spacing={2} justify="center">
-                <Grid item>
-                  <Link to="/create" style={{ textDecoration: "none" }}>
-                    <Button variant="contained" color="secondary">
-                      <EnhancedEncryptionIcon
-                        style={{ padding: 5 }}
-                      ></EnhancedEncryptionIcon>
-                      Create Vault
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Grid>
+                  <Grid item>
+                    <Link to="/express" style={{ textDecoration: "none" }}>
+                      <Button variant="contained" color="secondary">
+                        <KeyboardArrowRightIcon
+                          style={{ padding: 5 }}
+                        ></KeyboardArrowRightIcon>
+                        Quick Actions
+                      </Button>
+                    </Link>
+                  </Grid>
                 </Grid>
-                <Grid item>
-                  <Link to="/express" style={{ textDecoration: "none" }}>
-                    <Button variant="contained" color="secondary">
-                      <KeyboardArrowRightIcon
-                        style={{ padding: 5 }}
-                      ></KeyboardArrowRightIcon>
-                      Quick Actions
-                    </Button>
-                  </Link>
-                </Grid>
-              </Grid>
-            </div>
+              </div>
 
-            <br />
+              <br />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </ThemeProvider>
   );
 };
@@ -938,7 +962,8 @@ const Create = ({
                       className={classes.amount_input}
                       InputProps={{
                         endAdornment: (
-                          <InputAdornment position="end">{constants.assets[asset]
+                          <InputAdornment position="end">
+                            {constants.assets[asset]
                               ? constants.assets[asset].symbol
                               : ""}
                           </InputAdornment>
@@ -1055,34 +1080,88 @@ const Create = ({
   );
 };
 
-const WrongNetwork = ({ setWrongNetwork }) => {
+const WrongNetwork = ({ web3 }) => {
+  const switchToBSC = async () => {
+    let BSC = [
+      {
+        chainId: "0x38",
+        chainName: "Binance Smart Chain",
+        rpcUrls: ["https://bsc-dataseed.binance.org/"],
+        nativeCurrency: {
+          name: "Binance Coin",
+          symbol: "BSC",
+          decimals: 18,
+        },
+      },
+    ];
+    // Modern dapp browsers...
+    if (window.ethereum) {
+      try {
+        //switch to MATIC (POLYGON)
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: BSC,
+        });
+        window.location = "/";
+      } catch (error) {
+        alert("Failed to switch to BSC");
+      }
+    }
+  };
   return (
     <div class="center body-vertical-span">
       <Grid container justify="center">
         <Grid item>
-          <ErrorLogo style={{ width: 100, height: 100 }}></ErrorLogo>
+          <img
+            src={require("./resources/Logo_Black.svg")}
+            style={{ width: 150, height: 150 }}
+          ></img>
         </Grid>
         <Box width="100%"></Box>
         <Grid item justify="center">
-          <Typography variant="h4" align="center">
-            Please switch to supported networks to use this app.
+          <Typography variant="h4" align="center" style={{ margin: 15 }}>
+            {web3.error == "wrong network"
+              ? "Please switch to supported networks to use this app."
+              : "Please install Metamask to use this app."}
           </Typography>
           <div class="center">
-            <Link
-              to="/info"
-              style={{
-                textDecoration: "none",
-              }}
-            >
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setWrongNetwork(false);
-                }}
-              >
-                Learn More
-              </Button>
-            </Link>
+            <Grid container spacing={2} justify="center">
+              <Grid item>
+                <Link to="/info" style={{ textDecoration: "none" }}>
+                  <Button variant="contained" color="secondary">
+                    <HelpIcon style={{ padding: 5 }}></HelpIcon>
+                    Learn More
+                  </Button>
+                </Link>
+              </Grid>
+              <Grid item>
+                {web3.error == "wrong network" ? (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={switchToBSC}
+                  >
+                    <ErrorLogo
+                      style={{ width: 25, height: 25, padding: 5 }}
+                    ></ErrorLogo>
+                    Switch to BSC
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => {
+                      window.open("https://metamask.io/");
+                    }}
+                  >
+                    <KeyboardArrowRightIcon
+                      style={{ width: 25, height: 25, padding: 5 }}
+                    ></KeyboardArrowRightIcon>
+                    Get Metamask
+                  </Button>
+                )}
+              </Grid>
+            </Grid>
           </div>
         </Grid>
       </Grid>
@@ -1267,7 +1346,11 @@ const Info = ({ classes, setPage }) => {
                     src={require("./resources/bnb_logo.png")}
                     style={{ width: 25, height: 25, marginRight: 10 }}
                   ></img>{" "}
-                  BSC (Testnet)
+                  BSC (Live)
+                  <img
+                    src={require("./resources/green_light.png")}
+                    style={{ width: 20, height: 20, marginLeft: 6 }}
+                  ></img>
                 </Paper>
               </Grid>
               <Grid item>
@@ -1290,7 +1373,11 @@ const Info = ({ classes, setPage }) => {
                     src={require("./resources/ethereum_logo.png")}
                     style={{ width: 25, height: 25, marginRight: 10 }}
                   ></img>{" "}
-                  Ethereum (Rinkeby)
+                  Ethereum (Rinkeby){" "}
+                  <img
+                    src={require("./resources/yellow_light.png")}
+                    style={{ width: 20, height: 20, marginLeft: 6 }}
+                  ></img>
                 </Paper>
               </Grid>
               <Grid item>
@@ -1313,7 +1400,11 @@ const Info = ({ classes, setPage }) => {
                     src={require("./resources/polygon_logo.png")}
                     style={{ width: 25, height: 25, marginRight: 10 }}
                   ></img>{" "}
-                  Polygon (Testnet)
+                  Polygon (Testnet){" "}
+                  <img
+                    src={require("./resources/yellow_light.png")}
+                    style={{ width: 20, height: 20, marginLeft: 6 }}
+                  ></img>
                 </Paper>
               </Grid>
             </Grid>

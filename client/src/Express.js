@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Component } from "react";
 import ReactDOM from "react-dom";
-import KeylinkContract from "./contracts/Keylink.json";
+import KeylinkContract from "./contracts/Keylinq.json";
+import KeylinkProxy from "./contracts/KeylinqProxy.json";
 import ILiquidationCheck from "./contracts/ILiquidationCheck.json";
 import CountLiquidationCheck from "./contracts/CountLiquidationCheck.json";
 
@@ -159,7 +160,7 @@ const Request = ({ classes, constants, updateBackdrop, account }) => {
   const [ipfsLink, setIPFSLink] = useState("");
   const [openShareDialog, setOpenShareDialog] = useState(false);
   const publishRequest = async () => {
-    updateBackdrop(true);
+    updateBackdrop(true, "Uploading request details to IPFS...", true);
     const cid = await nftStorageClient.storeDirectory([
       new File(
         [
@@ -510,8 +511,9 @@ const Deposit = ({
   const [memo, setMemo] = useState("");
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
   const [openOnRampRequestDialog, setOpenOnRampRequestDialog] = useState(false);
+  let mounted;
   const confirmationDialog = async () => {
-    updateBackdrop(true);
+    updateBackdrop(true, "Confirming transaction...", true);
     setOpenConfirmationDialog(true);
   };
 
@@ -808,60 +810,37 @@ const Deposit = ({
     }
   };
 
-  const loadLink = async (cid) => {
+  const loadLink = (cid) => {
     // bafybeifvaza435yklb25e7aiwdqvrbnmugqa4nkbvu2o72ftelm5fyl7we
-    try {
-      // const status = await nftStorageClient.check(cid);
-      console.log(cid);
 
-      // const dirData = [];
-      // const detailsData = [];
-      // const paymentData = [];
+    // const status = await nftStorageClient.check(cid);
+    console.log(cid);
 
-      // for await (const chunk of ipfs.get(cid)) {
-      //   dirData.push(chunk);
-      // }
+    updateBackdrop(true, "Retrieving request details...", true);
+    const gateway = "https://ipfs.io/ipfs/";
+    const details = JSON.parse(readURL(gateway + cid + "/details.json"));
+    const payments = JSON.parse(readURL(gateway + cid + "/payment.json"));
 
-      updateBackdrop(true);
-      const gateway = "https://ipfs.io/ipfs/";
-      const details = JSON.parse(readURL(gateway + cid + "/details.json"));
-      const payments = JSON.parse(readURL(gateway + cid + "/payment.json"));
+    setAsset(payments.asset);
+    setAmount(payments.amount);
+    setRecepient(payments.recepient);
+    setExpiration(payments.expiration);
+    setName(details.name);
+    setDescription(details.description);
+    setEmail(details.email);
+    setIPFSHash(cid);
 
-      // for (const element of dirData) {
-      //   if (element.name == "details.json") {
-      //     for await (const chunk of element.content) {
-      //       detailsData.push(chunk);
-      //     }
-      //   } else if (element.name == "payment.json") {
-      //     for await (const chunk of element.content) {
-      //       paymentData.push(chunk);
-      //     }
-      //   }
-      // }
-      // const details = JSON.parse(
-      //   uint8ArrayToString(uint8ArrayConcat(detailsData))
-      // );
-      // const payments = JSON.parse(
-      //   uint8ArrayToString(uint8ArrayConcat(paymentData))
-      // );
-      setAsset(payments.asset);
-      setAmount(payments.amount);
-      setRecepient(payments.recepient);
-      setExpiration(payments.expiration);
-      setName(details.name);
-      setDescription(details.description);
-      setEmail(details.email);
-      setIPFSHash(cid);
-      updateBackdrop(false);
-    } catch (error) {
-      console.log(error);
-      updateBackdrop(false);
-    }
+    updateBackdrop(false);
   };
 
   useEffect(() => {
-    loadLink(match.params.cid);
-  }, []);
+    if (web3) {
+      loadLink(match.params.cid);
+    } else {
+      updateBackdrop(true, "Retrieving request details...", true);
+    }
+  }, [web3]);
+
   return (
     <div class="center body-vertical-span">
       <Dialog
@@ -900,27 +879,7 @@ const Deposit = ({
       </Dialog>
 
       {ipfsHash == "" ? (
-        <Grid container style={{ width: "100%", justifyContent: "center" }}>
-          <Grid item>
-            <Link to="/express">
-              <IconButton>
-                <Close style={{ width: 40, height: 40 }}></Close>
-              </IconButton>
-            </Link>
-          </Grid>
-
-          <Grid item>
-            <TextField
-              variant="standard"
-              className={classes.deposit_text_field}
-              label="Paste your hash here..."
-              onChange={(e) => loadLink(e.target.value)}
-              InputProps={{
-                style: { fontSize: 30 },
-              }}
-            ></TextField>
-          </Grid>
-        </Grid>
+        ""
       ) : (
         <ExpressForm
           asset={asset}

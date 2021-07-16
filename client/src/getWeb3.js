@@ -1,6 +1,6 @@
 import Web3 from "web3";
 
-const getWeb3 = async () => {
+export const getWeb3 = async () => {
   // Modern dapp browsers...
   if (window.ethereum) {
     const web3 = new Web3(window.ethereum);
@@ -28,4 +28,21 @@ const getWeb3 = async () => {
   }
 };
 
-export default getWeb3;
+export const isMetaMaskInstalled = () => {
+  if (window.ethereum) {
+    return window.ethereum.isMetaMask
+  }
+  return false
+}
+
+export const isMetaMaskConnected = () => {
+  return window.ethereum.isConnected()
+}
+
+export const isAddressConnected = () => {
+  if (window.ethereum && window.ethereum.selectedAddress) {
+    return true
+  }
+  return false
+}
+

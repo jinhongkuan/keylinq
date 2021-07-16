@@ -1,4 +1,5 @@
-const Keylink = artifacts.require("Keylink");
+const Keylinq = artifacts.require("Keylinq");
+const KeylinqProxy = artifacts.require("KeylinqProxy");
 const KeylinkDelegator = artifacts.require("KeylinkDelegator");
 const CountLiquidationCheck = artifacts.require("CountLiquidationCheck");
 const ERC20 = artifacts.require("ERC20");
@@ -10,24 +11,12 @@ hexToBytes = function (hex) {
 };
 
 module.exports = async function (deployer, network, accounts) {
-  await deployer.deploy(Keylink);
+  await deployer.deploy(Keylinq);
+  await deployer.deploy(KeylinqProxy);
   await deployer.deploy(CountLiquidationCheck);
 
-  // await deployer.deploy(KeylinkDelegator, (await Keylink.deployed()).address);
-
-  // let countContract = await CountLiquidationCheck.deployed();
-  // countContract = new web3.eth.Contract(
-  //   countContract.abi,
-  //   countContract.address,
-  //   {
-  //     gasLimit: 1000000,
-  //   }
-  // );
-
-  // let keylinkContract = await Keylink.deployed();
-  // keylinkContract = new web3.eth.Contract(
-  //   keylinkContract.abi,
-  //   keylinkContract.address,
-  //   { gasLimit: 1000000 }
-  // );
+  let keylinq = await Keylinq.deployed();
+  let proxy = await KeylinqProxy.deployed();
+  let countContract = await CountLiquidationCheck.deployed();
+  await proxy.upgrade(keylinq.address);
 };

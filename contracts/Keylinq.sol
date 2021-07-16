@@ -9,7 +9,7 @@ import "./ILiquidationCheck.sol";
 import "./IDelegator.sol"; 
 
 
-contract Keylink {
+contract Keylinq {
 
     event Created(address from, uint256 id);
     event TransferKey(address from, address to, uint256 id);
