@@ -23,7 +23,7 @@
         },
         "environment": {
           "deploymentBucketName": "amplify-server-dev-201150-deployment",
-          "s3Key": "amplify-builds/environment-2f454e6e49417871694b-build.zip"
+          "s3Key": "amplify-builds/environment-6e4b4c4c5437434a554a-build.zip"
         }
       }
     }

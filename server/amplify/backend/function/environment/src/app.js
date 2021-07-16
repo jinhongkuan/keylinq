@@ -32,7 +32,8 @@ app.get("/environment", function (req, res) {
     waitTime: {
       97: "3 seconds",
       4: "15 seconds",
-      80001: "3 seconds",
+      56: "10 seconds",
+      80001: "10 seconds",
     },
 
     waitMessage: [

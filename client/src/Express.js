@@ -68,7 +68,14 @@ const WhiteTypography = withStyles({
     color: "#FFFFFF",
   },
 })(Typography);
-
+const LandingPageTooltip = withStyles({
+  tooltip: {
+    color: "black",
+    backgroundColor: "white",
+    border: "1px  solid black",
+    fontSize: 15,
+  },
+})(Tooltip);
 const secret = require("./secret.json");
 const nftStorageClient = new NFTStorage({ token: secret.nftstorage_api });
 const axios = require("axios");
@@ -103,27 +110,48 @@ const Express = ({
         <Grid container spacing={2} justify="center">
           <Grid item>
             <Link to="/request" style={{ textDecoration: "none" }}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                style={{
-                  width: 200,
-                  height: 200,
-                  margin: 20,
-                  textTransform: "none",
-                }}
+              <LandingPageTooltip
+                title={
+                  <React.Fragment>
+                    <b>How it works:</b>
+                    <br />
+                    When a user clicks on your link, they will be redirected to
+                    open a two-keyed vault with the specified deposit amount, and transfer
+                    one key to you.
+                  </React.Fragment>
+                }
               >
-                <div style={{ marginTop: 15 }}>
-                  <ListAlt style={{ width: 50, height: 50 }}></ListAlt>
-                  <p>
-                    <h2 style={{ margin: 0 }}>Request</h2>
-                  </p>
-                  <p>Create a shareable link for deposit payment</p>
-                </div>
-              </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  style={{
+                    width: 200,
+                    height: 200,
+                    margin: 20,
+                    textTransform: "none",
+                  }}
+                >
+                  <div style={{ marginTop: 15 }}>
+                    <ListAlt style={{ width: 50, height: 50 }}></ListAlt>
+                    <p>
+                      <h2 style={{ margin: 0 }}>Request</h2>
+                    </p>
+                    <p>Create a shareable link for deposit payment</p>
+                  </div>
+                </Button>
+              </LandingPageTooltip>
             </Link>
           </Grid>
           <Grid item>
+          <LandingPageTooltip
+                title={
+                  <React.Fragment>
+                    <b>How it works:</b>
+                    <br />
+                    Open an any-key vault with the specified transaction amount, and hand one key over to the recipient. Both parties can unlock the vault with just one key. 
+                  </React.Fragment>
+                }
+              >
             <Button
               variant="outlined"
               color="secondary"
@@ -140,9 +168,10 @@ const Express = ({
                 <p>
                   <h2 style={{ margin: 0 }}>SafeTransfer</h2>
                 </p>
-                <p>Initiate a reversible crypto transfer (until accepted)</p>
+                <p>Initiate a cancellable crypto transfer</p>
               </div>
             </Button>
+            </LandingPageTooltip>
           </Grid>
         </Grid>
       </div>

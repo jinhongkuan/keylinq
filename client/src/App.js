@@ -746,6 +746,8 @@ const MainApp = ({
                     </Link>
                   </Grid>
                 </Grid>
+                <div style={{ height: 100 }}></div>
+                <Link to="/info">How does this work?</Link>
               </div>
 
               <br />
@@ -1186,12 +1188,29 @@ const Info = ({ classes, setPage }) => {
           </h1>
         </div>
         <div class="center">
-          <Link to="/" style={{ textDecoration: "none", marginTop: 25 }}>
-            <Button variant="outlined">Use App</Button>
+          <Link
+            to="/"
+            style={{ textDecoration: "none", marginTop: 25, marginRight: 15 }}
+          >
+            <Button variant="outlined" color="secondary">
+              Use App
+            </Button>
           </Link>
+          <Button
+            variant="outlined"
+            style={{ marginTop: 25, marginLeft: 15 }}
+            color="secondary"
+            onClick={() => {
+              window.open(
+                "https://www.notion.so/Keylinq-42a1e15b92aa458d9cea776e9db97ae7"
+              );
+            }}
+          >
+            How-to
+          </Button>
         </div>
         <div class="center">
-          <h3 style={{ color: "gray", marginTop: 25 }}>How Does it Work?</h3>
+          <h3 style={{ color: "gray", marginTop: 50 }}>How Does this Work?</h3>
           <div class="break"></div>
           <div style={{ width: "35vw", textAlign: "center", lineHeight: 1.5 }}>
             <p>
