@@ -1202,7 +1202,7 @@ const Info = ({ classes, setPage }) => {
             color="secondary"
             onClick={() => {
               window.open(
-                "https://www.notion.so/Keylinq-42a1e15b92aa458d9cea776e9db97ae7"
+                "https://goldenrod-cent-d46.notion.site/Keylinq-42a1e15b92aa458d9cea776e9db97ae7"
               );
             }}
           >
