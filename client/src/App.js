@@ -195,6 +195,13 @@ const styles = (theme) => ({
   deposit_text_field: {
     width: "50vw",
   },
+
+  landing_page_section: {
+    width: "35vw",
+    minWidth: "350px",
+    textAlign: "center",
+    lineHeight: 1.5,
+  },
 });
 
 const WhiteTypography = withStyles({
@@ -1183,8 +1190,8 @@ const Info = ({ classes, setPage }) => {
             Keylinq
           </h1>
           <div class="break"></div>
-          <h1 style={{ lineHeight: 0.5, fontSize: 25 }}>
-            Your One-stop Shop for Smart Contracts 🤝
+          <h1 className={classes.landing_page_section}>
+            Your Gateway to Smart Payments
           </h1>
         </div>
         <div class="center">
@@ -1212,7 +1219,7 @@ const Info = ({ classes, setPage }) => {
         <div class="center">
           <h3 style={{ color: "gray", marginTop: 50 }}>How Does this Work?</h3>
           <div class="break"></div>
-          <div style={{ width: "35vw", textAlign: "center", lineHeight: 1.5 }}>
+          <div className={classes.landing_page_section}>
             <p>
               To simplify contract payments, we create (free!){" "}
               <b>virtual vaults</b> for you on the blockchain.
@@ -1241,9 +1248,10 @@ const Info = ({ classes, setPage }) => {
               style={{ width: 200, height: 200 }}
             ></img>
             <p>
-              Finally, funds in vaults can be <b>liquidated</b> based on the
-              vault's liquidation rule. For instance, the liquidator may be
-              required to own
+              Finally, funds in vaults can be <b>liquidated</b> based on set
+              rules. In a two-key vault for contract work, both keys are needed
+              to unlock the payment fund, so money cannot be removed until both
+              parties consent. Vault can also to customized to be unlockable by
               <b> any key</b>, <b>all keys</b>, or <b>specific keys</b>.
             </p>
             <img
@@ -1255,7 +1263,7 @@ const Info = ({ classes, setPage }) => {
         <div class="center">
           <h3 style={{ color: "gray", marginTop: 50 }}>Use Cases</h3>
           <div class="break"></div>
-          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+          <div className={classes.landing_page_section}>
             <p>
               <b>Commission/contract work</b>
             </p>
@@ -1272,7 +1280,7 @@ const Info = ({ classes, setPage }) => {
             </p>
           </div>
           <div style={{ width: "10vw" }}></div>
-          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+          <div className={classes.landing_page_section}>
             <p>
               <b>Safe money transfer</b>
             </p>
@@ -1293,7 +1301,7 @@ const Info = ({ classes, setPage }) => {
           <h3 style={{ color: "gray", marginTop: 50 }}>Roadmap</h3>
 
           <div class="break"></div>
-          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+          <div className={classes.landing_page_section}>
             <div class="center">
               <span>
                 <b>Chainlink integration</b>
@@ -1319,7 +1327,7 @@ const Info = ({ classes, setPage }) => {
 
           <div class="break" style={{ height: 25 }}></div>
 
-          <div style={{ width: "25vw", textAlign: "center", lineHeight: 1.5 }}>
+          <div className={classes.landing_page_section}>
             <div class="center">
               <span>
                 <b>Superfluid integration</b>
